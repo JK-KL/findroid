@@ -35,13 +35,6 @@ jobs:
           fileName: 'findroid-keystore.jks'
           encodedString: ${{ secrets.FINDROID_KEYSTORE }}
 
-      - name: Decode Play API credentials file
-        uses: timheuer/base64-to-file@v1
-        id: findroid_play_api_credentials
-        with:
-          fileName: 'findroid-play-api-credentials.json'
-          encodedString: ${{ secrets.FINDROID_PLAY_API_CREDENTIALS }}
-
       - name: Build and publish
         run: bundle exec fastlane publish
         env:
@@ -49,7 +42,6 @@ jobs:
           FINDROID_KEYSTORE_PASSWORD: ${{ secrets.FINDROID_KEYSTORE_PASSWORD }}
           FINDROID_KEY_ALIAS: ${{ secrets.FINDROID_KEY_ALIAS }}
           FINDROID_KEY_PASSWORD: ${{ secrets.FINDROID_KEY_PASSWORD }}
-          FINDROID_PLAY_API_CREDENTIALS: ${{ steps.findroid_play_api_credentials.outputs.filePath }}
 
       - name: Create release
         uses: softprops/action-gh-release@v2

@@ -127,7 +127,6 @@ fun Modifier.handleDPadKeyEvents(
     false
 }
 
-
 fun Modifier.handleMenuKeyEvents(
     onMenu: (() -> Unit)? = null,
 ) = onKeyEvent {

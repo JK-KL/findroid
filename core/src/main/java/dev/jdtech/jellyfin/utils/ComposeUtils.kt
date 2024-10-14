@@ -33,6 +33,8 @@ private val DPadEventsKeyCodes = listOf(
     KeyEvent.KEYCODE_DPAD_CENTER,
     KeyEvent.KEYCODE_ENTER,
     KeyEvent.KEYCODE_NUMPAD_ENTER,
+    KeyEvent.KEYCODE_MENU,
+    KeyEvent.KEYCODE_BACK,
 )
 
 /**
@@ -73,6 +75,26 @@ fun Modifier.handleDPadKeyEvents(
     false
 }
 
+fun Modifier.handleBackKeyEvents(
+    onBack: (() -> Unit)? = null,
+) = onPreviewKeyEvent {
+    fun onActionUp(block: () -> Unit) {
+        if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) block()
+    }
+
+    if (DPadEventsKeyCodes.contains(it.nativeKeyEvent.keyCode)) {
+        when (it.nativeKeyEvent.keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                onBack?.apply {
+                    onActionUp(::invoke)
+                    return@onPreviewKeyEvent true
+                }
+            }
+        }
+    }
+    false
+}
+
 /**
  * Handles all D-Pad Keys
  * */
@@ -99,6 +121,20 @@ fun Modifier.handleDPadKeyEvents(
             }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 onEnter?.invoke().also { return@onKeyEvent true }
+            }
+        }
+    }
+    false
+}
+
+
+fun Modifier.handleMenuKeyEvents(
+    onMenu: (() -> Unit)? = null,
+) = onKeyEvent {
+    if (DPadEventsKeyCodes.contains(it.nativeKeyEvent.keyCode) && it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+        when (it.nativeKeyEvent.keyCode) {
+            KeyEvent.KEYCODE_MENU -> {
+                onMenu?.invoke().also { return@onKeyEvent true }
             }
         }
     }

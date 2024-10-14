@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.tv.material3.Icon
 import androidx.tv.material3.IconButton
@@ -16,6 +17,7 @@ fun VideoPlayerMediaButton(
     state: VideoPlayerState,
     isPlaying: Boolean,
     onClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -26,7 +28,7 @@ fun VideoPlayerMediaButton(
         }
     }
 
-    IconButton(onClick = onClick, interactionSource = interactionSource) {
+    IconButton(onClick = onClick, interactionSource = interactionSource, modifier = modifier) {
         Icon(painter = icon, contentDescription = null)
     }
 }

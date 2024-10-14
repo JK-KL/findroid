@@ -23,9 +23,6 @@ class VideoPlayerState internal constructor(
     private var _quickSeek by mutableStateOf(false)
     val quickSeek get() = _quickSeek
 
-    private var _seeking by mutableStateOf(false)
-    val isSeeking get() = _seeking
-
     fun showControls(seconds: Int = hideSeconds) {
         _controlsVisible = true
         channel.trySend(seconds)

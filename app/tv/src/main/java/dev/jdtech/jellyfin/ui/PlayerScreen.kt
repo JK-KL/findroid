@@ -374,7 +374,7 @@ private fun Modifier.keyboardEvents(
         },
     )
 
-@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class)
 private fun getTracks(
     player: Player,
     type: Int,
@@ -411,7 +411,7 @@ private fun getTracks(
     return arrayOf(noneTrack) + tracks
 }
 
-@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class)
 private fun getSpeed(currentSpeed: Float): Array<Track> {
     val tracks = arrayListOf<Track>()
     for (groupIndex in 0 until speedTexts.count()) {

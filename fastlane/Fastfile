@@ -44,7 +44,7 @@ platform :android do
         )
 
         gradle(
-          task: "app:tc:bundle",
+          task: "app:tv:bundle",
           flavor: "libre",
           build_type: "release",
           print_command: false,

@@ -122,7 +122,14 @@ fun ShowScreen(
             showViewModel.toggleFavorite()
         },
         onSeasonClick = { season ->
-            navigator.navigate(SeasonScreenDestination(seriesId = season.seriesId, seasonId = season.id, seriesName = season.seriesName, seasonName = season.name))
+            navigator.navigate(
+                SeasonScreenDestination(
+                    seriesId = season.seriesId,
+                    seasonId = season.id,
+                    seriesName = season.seriesName,
+                    seasonName = season.name,
+                ),
+            )
         },
     )
 }
@@ -141,7 +148,7 @@ private fun ShowScreenLayout(
     val locale = configuration.locales.get(0)
 
     val listState = rememberLazyListState()
-    val listSize = remember { mutableIntStateOf(2) }
+    val listSize = remember { mutableIntStateOf(4) }
     var currentIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(currentIndex) {
@@ -153,6 +160,7 @@ private fun ShowScreenLayout(
         is ShowViewModel.UiState.Normal -> {
             val item = uiState.item
             val seasons = uiState.seasons
+            val people = uiState.allPeople
             var size by remember {
                 mutableStateOf(Size.Zero)
             }
@@ -304,7 +312,11 @@ private fun ShowScreenLayout(
                                         tint = if (item.played) Color.Red else LocalContentColor.current,
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text(text = stringResource(id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played))
+                                    Text(
+                                        text = stringResource(
+                                            id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played,
+                                        ),
+                                    )
                                 }
                                 Button(
                                     onClick = {
@@ -312,12 +324,18 @@ private fun ShowScreenLayout(
                                     },
                                 ) {
                                     Icon(
-                                        painter = painterResource(id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart),
+                                        painter = painterResource(
+                                            id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart,
+                                        ),
                                         contentDescription = null,
                                         tint = if (item.favorite) Color.Red else LocalContentColor.current,
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text(text = stringResource(id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites))
+                                    Text(
+                                        text = stringResource(
+                                            id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites,
+                                        ),
+                                    )
                                 }
                             }
                             Spacer(modifier = Modifier.height(MaterialTheme.spacings.default))
@@ -335,30 +353,30 @@ private fun ShowScreenLayout(
                                         style = MaterialTheme.typography.bodyMedium,
                                     )
                                 }
-                                uiState.director?.let { director ->
-                                    Column {
-                                        Text(
-                                            text = stringResource(id = CoreR.string.director),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = Color.White.copy(alpha = .5f),
-                                        )
-                                        Text(
-                                            text = director.name ?: "Unknown",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                        )
-                                    }
-                                }
-                                Column {
-                                    Text(
-                                        text = stringResource(id = CoreR.string.writers),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.White.copy(alpha = .5f),
-                                    )
-                                    Text(
-                                        text = uiState.writersString,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                }
+//                                uiState.director?.let { director ->
+//                                    Column {
+//                                        Text(
+//                                            text = stringResource(id = CoreR.string.director),
+//                                            style = MaterialTheme.typography.bodyMedium,
+//                                            color = Color.White.copy(alpha = .5f),
+//                                        )
+//                                        Text(
+//                                            text = director.name ?: "Unknown",
+//                                            style = MaterialTheme.typography.bodyMedium,
+//                                        )
+//                                    }
+//                                }
+//                                Column {
+//                                    Text(
+//                                        text = stringResource(id = CoreR.string.writers),
+//                                        style = MaterialTheme.typography.bodyMedium,
+//                                        color = Color.White.copy(alpha = .5f),
+//                                    )
+//                                    Text(
+//                                        text = uiState.writersString,
+//                                        style = MaterialTheme.typography.bodyMedium,
+//                                    )
+//                                }
                             }
                             Spacer(modifier = Modifier.height(MaterialTheme.spacings.large))
                             Text(
@@ -379,6 +397,35 @@ private fun ShowScreenLayout(
                                     onClick = {
                                         onSeasonClick(season)
                                     },
+                                )
+                            }
+                        }
+                    }
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .padding(
+                                    start = MaterialTheme.spacings.default * 2,
+                                    end = MaterialTheme.spacings.default * 2,
+                                ),
+                        ) {
+                            Spacer(modifier = Modifier.height(MaterialTheme.spacings.large))
+                            Text(
+                                text = stringResource(id = CoreR.string.cast_amp_crew),
+                                style = MaterialTheme.typography.headlineMedium,
+                            )
+                        }
+                    }
+                    item {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.default),
+                            contentPadding = PaddingValues(horizontal = MaterialTheme.spacings.default * 2),
+                        ) {
+                            items(people) { person ->
+                                ItemCard(
+                                    item = person,
+                                    direction = Direction.VERTICAL,
+                                    onClick = {},
                                 )
                             }
                         }
@@ -411,6 +458,7 @@ private fun ShowScreenLayoutPreview() {
                 dateString = "2013 - 2023",
                 nextUp = null,
                 seasons = emptyList(),
+                allPeople = emptyList(),
             ),
             onPlayClick = {},
             onTrailerClick = {},

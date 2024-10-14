@@ -2,11 +2,13 @@ package dev.jdtech.jellyfin.ui
 
 import android.content.Intent
 import android.net.Uri
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,10 +16,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,6 +35,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.nativeKeyCode
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -54,6 +64,8 @@ import dev.jdtech.jellyfin.models.AudioCodec
 import dev.jdtech.jellyfin.models.DisplayProfile
 import dev.jdtech.jellyfin.models.Resolution
 import dev.jdtech.jellyfin.models.VideoMetadata
+import dev.jdtech.jellyfin.ui.components.Direction
+import dev.jdtech.jellyfin.ui.components.ItemCard
 import dev.jdtech.jellyfin.ui.dummy.dummyMovie
 import dev.jdtech.jellyfin.ui.theme.FindroidTheme
 import dev.jdtech.jellyfin.ui.theme.Yellow
@@ -129,10 +141,19 @@ private fun MovieScreenLayout(
     val configuration = LocalConfiguration.current
     val locale = configuration.locales.get(0)
 
+    val listState = rememberLazyListState()
+    val listSize = remember { mutableIntStateOf(2) }
+    var currentIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(currentIndex) {
+        listState.animateScrollToItem(currentIndex)
+    }
+
     when (uiState) {
         is MovieViewModel.UiState.Loading -> Text(text = "LOADING")
         is MovieViewModel.UiState.Normal -> {
             val item = uiState.item
+            val people = uiState.allPeople
             var size by remember {
                 mutableStateOf(Size.Zero)
             }
@@ -163,168 +184,211 @@ private fun MovieScreenLayout(
                             ),
                     )
                 }
-                Column(
-                    modifier = Modifier
-                        .padding(start = MaterialTheme.spacings.default * 2, end = MaterialTheme.spacings.default * 2),
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(top = 112.dp, bottom = MaterialTheme.spacings.large),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.medium),
+                    userScrollEnabled = false,
+                    modifier = Modifier.onPreviewKeyEvent { keyEvent ->
+                        when (keyEvent.key.nativeKeyCode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                currentIndex = (++currentIndex).coerceIn(0, listSize.intValue - 1)
+                            }
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                currentIndex = (--currentIndex).coerceIn(0, listSize.intValue - 1)
+                            }
+                        }
+                        false
+                    },
                 ) {
-                    Spacer(modifier = Modifier.height(112.dp))
-                    Text(
-                        text = item.name,
-                        style = MaterialTheme.typography.displayMedium,
-                    )
-                    if (item.originalTitle != item.name) {
-                        item.originalTitle?.let { originalTitle ->
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .padding(start = MaterialTheme.spacings.default * 2, end = MaterialTheme.spacings.default * 2),
+                        ) {
                             Text(
-                                text = originalTitle,
-                                style = MaterialTheme.typography.bodyMedium,
+                                text = item.name,
+                                style = MaterialTheme.typography.displayMedium,
                             )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacings.small))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.small),
-                    ) {
-                        Text(
-                            text = uiState.dateString,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                        Text(
-                            text = uiState.runTime,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                        item.officialRating?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.labelMedium,
-                            )
-                        }
-                        item.communityRating?.let {
-                            Row {
-                                Icon(
-                                    painter = painterResource(id = CoreR.drawable.ic_star),
-                                    contentDescription = null,
-                                    tint = Yellow,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                                Spacer(modifier = Modifier.width(MaterialTheme.spacings.extraSmall))
+                            if (item.originalTitle != item.name) {
+                                item.originalTitle?.let { originalTitle ->
+                                    Text(
+                                        text = originalTitle,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(MaterialTheme.spacings.small))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.small),
+                            ) {
                                 Text(
-                                    text = String.format(locale, "%.1f", it),
+                                    text = uiState.dateString,
                                     style = MaterialTheme.typography.labelMedium,
                                 )
+                                Text(
+                                    text = uiState.runTime,
+                                    style = MaterialTheme.typography.labelMedium,
+                                )
+                                item.officialRating?.let {
+                                    Text(
+                                        text = it,
+                                        style = MaterialTheme.typography.labelMedium,
+                                    )
+                                }
+                                item.communityRating?.let {
+                                    Row {
+                                        Icon(
+                                            painter = painterResource(id = CoreR.drawable.ic_star),
+                                            contentDescription = null,
+                                            tint = Yellow,
+                                            modifier = Modifier.size(16.dp),
+                                        )
+                                        Spacer(modifier = Modifier.width(MaterialTheme.spacings.extraSmall))
+                                        Text(
+                                            text = String.format(locale, "%.1f", it),
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
+                                    }
+                                }
                             }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacings.medium))
-                    Text(
-                        text = item.overview,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 4,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.width(640.dp),
-                    )
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacings.default))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.medium),
-                    ) {
-                        Button(
-                            onClick = {
-                                onPlayClick()
-                            },
-                            modifier = Modifier.focusRequester(focusRequester),
-                        ) {
-                            Icon(
-                                painter = painterResource(id = CoreR.drawable.ic_play),
-                                contentDescription = null,
+                            Spacer(modifier = Modifier.height(MaterialTheme.spacings.medium))
+                            Text(
+                                text = item.overview,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 4,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.width(640.dp),
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = stringResource(id = CoreR.string.play))
-                        }
-                        item.trailer?.let { trailerUri ->
-                            Button(
-                                onClick = {
-                                    onTrailerClick(trailerUri)
-                                },
+                            Spacer(modifier = Modifier.height(MaterialTheme.spacings.default))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.medium),
                             ) {
-                                Icon(
-                                    painter = painterResource(id = CoreR.drawable.ic_film),
-                                    contentDescription = null,
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(text = stringResource(id = CoreR.string.watch_trailer))
+                                Button(
+                                    onClick = {
+                                        onPlayClick()
+                                    },
+                                    modifier = Modifier.focusRequester(focusRequester),
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = CoreR.drawable.ic_play),
+                                        contentDescription = null,
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(text = stringResource(id = CoreR.string.play))
+                                }
+                                item.trailer?.let { trailerUri ->
+                                    Button(
+                                        onClick = {
+                                            onTrailerClick(trailerUri)
+                                        },
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = CoreR.drawable.ic_film),
+                                            contentDescription = null,
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(text = stringResource(id = CoreR.string.watch_trailer))
+                                    }
+                                }
+                                Button(
+                                    onClick = {
+                                        onPlayedClick()
+                                    },
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = CoreR.drawable.ic_check),
+                                        contentDescription = null,
+                                        tint = if (item.played) Color.Red else LocalContentColor.current,
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(
+                                            id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played,
+                                        ),
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        onFavoriteClick()
+                                    },
+                                ) {
+                                    Icon(
+                                        painter = painterResource(
+                                            id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart,
+                                        ),
+                                        contentDescription = null,
+                                        tint = if (item.favorite) Color.Red else LocalContentColor.current,
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(
+                                            id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites,
+                                        ),
+                                    )
+                                }
                             }
-                        }
-                        Button(
-                            onClick = {
-                                onPlayedClick()
-                            },
-                        ) {
-                            Icon(
-                                painter = painterResource(id = CoreR.drawable.ic_check),
-                                contentDescription = null,
-                                tint = if (item.played) Color.Red else LocalContentColor.current,
+                            Spacer(modifier = Modifier.height(MaterialTheme.spacings.default))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.large),
+                            ) {
+                                Column {
+                                    Text(
+                                        text = stringResource(id = CoreR.string.genres),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.White.copy(alpha = .5f),
+                                    )
+                                    Text(
+                                        text = uiState.genresString,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                }
+//                                uiState.director?.let { director ->
+//                                    Column {
+//                                        Text(
+//                                            text = stringResource(id = CoreR.string.director),
+//                                            style = MaterialTheme.typography.bodyMedium,
+//                                            color = Color.White.copy(alpha = .5f),
+//                                        )
+//                                        Text(
+//                                            text = director.name ?: "Unknown",
+//                                            style = MaterialTheme.typography.bodyMedium,
+//                                        )
+//                                    }
+//                                }
+//                                Column {
+//                                    Text(
+//                                        text = stringResource(id = CoreR.string.writers),
+//                                        style = MaterialTheme.typography.bodyMedium,
+//                                        color = Color.White.copy(alpha = .5f),
+//                                    )
+//                                    Text(
+//                                        text = uiState.writersString,
+//                                        style = MaterialTheme.typography.bodyMedium,
+//                                    )
+//                                }
+                            }
+                            Spacer(modifier = Modifier.height(MaterialTheme.spacings.large))
+                            Text(
+                                text = stringResource(id = CoreR.string.cast_amp_crew),
+                                style = MaterialTheme.typography.headlineMedium,
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = stringResource(id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played))
-                        }
-                        Button(
-                            onClick = {
-                                onFavoriteClick()
-                            },
-                        ) {
-                            Icon(
-                                painter = painterResource(id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart),
-                                contentDescription = null,
-                                tint = if (item.favorite) Color.Red else LocalContentColor.current,
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = stringResource(id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites))
                         }
                     }
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacings.default))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.large),
-                    ) {
-                        Column {
-                            Text(
-                                text = stringResource(id = CoreR.string.genres),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = .5f),
-                            )
-                            Text(
-                                text = uiState.genresString,
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
-                        uiState.director?.let { director ->
-                            Column {
-                                Text(
-                                    text = stringResource(id = CoreR.string.director),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.White.copy(alpha = .5f),
-                                )
-                                Text(
-                                    text = director.name ?: "Unknown",
-                                    style = MaterialTheme.typography.bodyMedium,
+                    item {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.default),
+                            contentPadding = PaddingValues(horizontal = MaterialTheme.spacings.default * 2),
+                        ) {
+                            items(people) { person ->
+                                ItemCard(
+                                    item = person,
+                                    direction = Direction.VERTICAL,
+                                    onClick = {},
                                 )
                             }
                         }
-                        Column {
-                            Text(
-                                text = stringResource(id = CoreR.string.writers),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = .5f),
-                            )
-                            Text(
-                                text = uiState.writersString,
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
                     }
-//                    Spacer(modifier = Modifier.height(MaterialTheme.spacings.large))
-//                    Text(
-//                        text = stringResource(id = CoreR.string.cast_amp_crew),
-//                        style = MaterialTheme.typography.headlineMedium,
-//                    )
                 }
             }
 
@@ -365,6 +429,7 @@ private fun MovieScreenLayoutPreview() {
                 subtitleString = "",
                 runTime = "121 min",
                 dateString = "2019",
+                allPeople = emptyList(),
             ),
             onPlayClick = {},
             onTrailerClick = {},

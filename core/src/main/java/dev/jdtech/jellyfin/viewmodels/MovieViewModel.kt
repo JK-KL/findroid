@@ -12,11 +12,13 @@ import dev.jdtech.jellyfin.models.AudioCodec
 import dev.jdtech.jellyfin.models.DisplayProfile
 import dev.jdtech.jellyfin.models.FindroidMediaStream
 import dev.jdtech.jellyfin.models.FindroidMovie
+import dev.jdtech.jellyfin.models.FindroidPerson
 import dev.jdtech.jellyfin.models.FindroidSourceType
 import dev.jdtech.jellyfin.models.Resolution
 import dev.jdtech.jellyfin.models.UiText
 import dev.jdtech.jellyfin.models.VideoMetadata
 import dev.jdtech.jellyfin.models.isDownloading
+import dev.jdtech.jellyfin.models.toFindroidPerson
 import dev.jdtech.jellyfin.repository.JellyfinRepository
 import dev.jdtech.jellyfin.utils.Downloader
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +61,7 @@ constructor(
     sealed class UiState {
         data class Normal(
             val item: FindroidMovie,
+            val allPeople: List<FindroidPerson>,
             val actors: List<BaseItemPerson>,
             val director: BaseItemPerson?,
             val writers: List<BaseItemPerson>,
@@ -96,6 +99,7 @@ constructor(
                 }
                 currentUiState = UiState.Normal(
                     item,
+                    getPeople(item),
                     getActors(item),
                     getDirector(item),
                     writers,
@@ -121,11 +125,18 @@ constructor(
     private suspend fun getActors(item: FindroidMovie): List<BaseItemPerson> {
         val actors: List<BaseItemPerson>
         withContext(Dispatchers.Default) {
-            actors = item.people.filter { it.type == PersonKind.ACTOR }
+            actors = item.people.filter {
+                it.type == PersonKind.ACTOR }
         }
         return actors
     }
-
+    private suspend fun getPeople(item: FindroidMovie): List<FindroidPerson> {
+        val perple: List<FindroidPerson>
+        withContext(Dispatchers.Default) {
+            perple = item.people.map { it.toFindroidPerson(repository.getBaseUrl()) }
+        }
+        return perple
+    }
     private suspend fun getDirector(item: FindroidMovie): BaseItemPerson? {
         val director: BaseItemPerson?
         withContext(Dispatchers.Default) {

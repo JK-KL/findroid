@@ -8,9 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -24,6 +28,7 @@ import dev.jdtech.jellyfin.ui.theme.spacings
 import kotlin.time.Duration
 import dev.jdtech.jellyfin.core.R as CoreR
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun VideoPlayerSeeker(
     focusRequester: FocusRequester,
@@ -33,7 +38,13 @@ fun VideoPlayerSeeker(
     onSeek: (Float) -> Unit,
     contentProgress: Duration,
     contentDuration: Duration,
+    seekBackIncrement: Long,
+    seekForwardIncrement: Long,
+    modifier: Modifier = Modifier,
 ) {
+    // first means play button
+    // second means bar
+    val (first, second) = remember { FocusRequester.createRefs() }
     val contentProgressString =
         contentProgress.toComponents { h, m, s, _ ->
             if (h > 0) {
@@ -50,6 +61,16 @@ fun VideoPlayerSeeker(
                 "${m.padStartWith0()}:${s.padStartWith0()}"
             }
         }
+    LaunchedEffect(state.controlsVisible) {
+        if (state.controlsVisible) {
+            first.requestFocus()
+        }
+    }
+    LaunchedEffect(state.controlsVisible && state.quickSeek) {
+        if (state.quickSeek && state.controlsVisible) {
+            second.requestFocus()
+        }
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -58,7 +79,9 @@ fun VideoPlayerSeeker(
             onClick = {
                 onPlayPauseToggle(!isPlaying)
             },
-            modifier = Modifier.focusRequester(focusRequester),
+            modifier = modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
+                right = second
+            },
         ) {
             if (!isPlaying) {
                 Icon(
@@ -94,6 +117,14 @@ fun VideoPlayerSeeker(
                 progress = (contentProgress / contentDuration).toFloat(),
                 onSeek = onSeek,
                 state = state,
+                modifier = modifier.focusRequester(focusRequester).focusRequester(second).focusProperties {
+                    left = first
+                    right = FocusRequester.Cancel
+                },
+                focusRequester = focusRequester,
+                contentDuration = contentDuration,
+                seekBackIncrement = seekBackIncrement,
+                seekForwardIncrement = seekForwardIncrement,
             )
         }
     }
@@ -111,6 +142,8 @@ private fun VideoPlayerSeekerPreview() {
             onSeek = {},
             contentProgress = Duration.parse("7m 51s"),
             contentDuration = Duration.parse("23m 40s"),
+            seekForwardIncrement = 10L,
+            seekBackIncrement = 5L,
         )
     }
 }

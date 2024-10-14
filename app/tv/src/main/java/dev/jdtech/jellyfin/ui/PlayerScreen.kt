@@ -1,5 +1,6 @@
 package dev.jdtech.jellyfin.ui
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,8 +16,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -47,14 +51,20 @@ import dev.jdtech.jellyfin.ui.components.player.VideoPlayerOverlay
 import dev.jdtech.jellyfin.ui.components.player.VideoPlayerSeeker
 import dev.jdtech.jellyfin.ui.components.player.VideoPlayerState
 import dev.jdtech.jellyfin.ui.components.player.rememberVideoPlayerState
+import dev.jdtech.jellyfin.ui.dialogs.SPEED_SELECT
 import dev.jdtech.jellyfin.ui.dialogs.VideoPlayerTrackSelectorDialogResult
 import dev.jdtech.jellyfin.ui.theme.spacings
 import dev.jdtech.jellyfin.utils.handleDPadKeyEvents
+import dev.jdtech.jellyfin.utils.handleMenuKeyEvents
 import dev.jdtech.jellyfin.viewmodels.PlayerActivityViewModel
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
+val speedTexts = listOf("0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x", "3x")
+val speedNumbers = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 3f)
+
+@kotlin.OptIn(ExperimentalComposeUiApi::class)
 @Destination<RootGraph>
 @Composable
 fun PlayerScreen(
@@ -76,24 +86,25 @@ fun PlayerScreen(
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            lifecycle = event
+        val observer =
+            LifecycleEventObserver { _, event ->
+                lifecycle = event
 
-            // Handle creation and release of media session
-            when (lifecycle) {
-                Lifecycle.Event.ON_STOP -> {
-                    println("ON_STOP")
-                    mediaSession?.release()
+                // Handle creation and release of media session
+                when (lifecycle) {
+                    Lifecycle.Event.ON_STOP -> {
+                        println("ON_STOP")
+                        mediaSession?.release()
+                    }
+
+                    Lifecycle.Event.ON_START -> {
+                        println("ON_START")
+                        mediaSession = MediaSession.Builder(context, viewModel.player).build()
+                    }
+
+                    else -> {}
                 }
-
-                Lifecycle.Event.ON_START -> {
-                    println("ON_START")
-                    mediaSession = MediaSession.Builder(context, viewModel.player).build()
-                }
-
-                else -> {}
             }
-        }
         lifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
@@ -125,31 +136,42 @@ fun PlayerScreen(
                 val index = result.value.index
 
                 if (index == -1) {
-                    viewModel.player.trackSelectionParameters = viewModel.player.trackSelectionParameters
-                        .buildUpon()
-                        .clearOverridesOfType(trackType)
-                        .setTrackTypeDisabled(trackType, true)
-                        .build()
+                    viewModel.player.trackSelectionParameters =
+                        viewModel.player.trackSelectionParameters
+                            .buildUpon()
+                            .clearOverridesOfType(trackType)
+                            .setTrackTypeDisabled(trackType, true)
+                            .build()
                 } else {
-                    viewModel.player.trackSelectionParameters = viewModel.player.trackSelectionParameters
-                        .buildUpon()
-                        .setOverrideForType(
-                            TrackSelectionOverride(viewModel.player.currentTracks.groups[index].mediaTrackGroup, 0),
-                        )
-                        .setTrackTypeDisabled(trackType, false)
-                        .build()
+                    if (trackType == SPEED_SELECT) {
+                        viewModel.selectSpeed(speedNumbers[index])
+                    } else {
+                        viewModel.player.trackSelectionParameters =
+                            viewModel.player.trackSelectionParameters
+                                .buildUpon()
+                                .setOverrideForType(
+                                    TrackSelectionOverride(
+                                        viewModel.player.currentTracks.groups[index]
+                                            .mediaTrackGroup,
+                                        0,
+                                    ),
+                                ).setTrackTypeDisabled(trackType, false)
+                                .build()
+                    }
                 }
             }
         }
     }
 
+
+
     Box(
-        modifier = Modifier
-            .dPadEvents(
-                exoPlayer = viewModel.player,
-                videoPlayerState = videoPlayerState,
-            )
-            .focusable(),
+        modifier =
+            Modifier
+                .keyboardEvents(
+                    exoPlayer = viewModel.player,
+                    videoPlayerState = videoPlayerState,
+                ).focusable(),
     ) {
         AndroidView(
             factory = { context ->
@@ -179,10 +201,12 @@ fun PlayerScreen(
                     else -> Unit
                 }
             },
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier =
+                Modifier
+                    .fillMaxSize(),
         )
         val focusRequester = remember { FocusRequester() }
+
         VideoPlayerOverlay(
             modifier = Modifier.align(Alignment.BottomCenter),
             focusRequester = focusRequester,
@@ -197,13 +221,15 @@ fun PlayerScreen(
                     state = videoPlayerState,
                     focusRequester = focusRequester,
                     navigator = navigator,
+                    speed = viewModel.playbackSpeed,
                 )
             },
         )
     }
 }
 
-@androidx.annotation.OptIn(UnstableApi::class)
+@ExperimentalComposeUiApi
+@OptIn(UnstableApi::class)
 @Composable
 fun VideoPlayerControls(
     title: String,
@@ -213,12 +239,23 @@ fun VideoPlayerControls(
     state: VideoPlayerState,
     focusRequester: FocusRequester,
     navigator: DestinationsNavigator,
+    speed: Float,
 ) {
+    // first means media action
+    // second means seekbar
+    val (first, second) = remember { FocusRequester.createRefs() }
+
     val onPlayPauseToggle = { shouldPlay: Boolean ->
         if (shouldPlay) {
             player.play()
         } else {
             player.pause()
+        }
+    }
+
+    LaunchedEffect(state.controlsVisible && state.quickSeek) {
+        if (state.quickSeek && state.controlsVisible) {
+            second.requestFocus()
         }
     }
 
@@ -238,6 +275,11 @@ fun VideoPlayerControls(
                 onSeek = { player.seekTo(player.duration.times(it).toLong()) },
                 contentProgress = contentCurrentPosition.milliseconds,
                 contentDuration = player.duration.milliseconds,
+                seekBackIncrement=player.seekBackIncrement,
+                seekForwardIncrement=player.seekForwardIncrement,
+                modifier = Modifier.focusRequester(focusRequester).focusRequester(second).focusProperties {
+                    up = first
+                },
             )
         },
         mediaActions = {
@@ -250,7 +292,16 @@ fun VideoPlayerControls(
                     isPlaying = isPlaying,
                     onClick = {
                         val tracks = getTracks(player, C.TRACK_TYPE_AUDIO)
-                        navigator.navigate(VideoPlayerTrackSelectorDialogDestination(C.TRACK_TYPE_AUDIO, tracks))
+                        navigator.navigate(
+                            VideoPlayerTrackSelectorDialogDestination(
+                                C.TRACK_TYPE_AUDIO,
+                                tracks,
+                            ),
+                        )
+                    },
+                    modifier = Modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
+                        left = FocusRequester.Cancel
+                        down = second
                     },
                 )
                 VideoPlayerMediaButton(
@@ -259,7 +310,32 @@ fun VideoPlayerControls(
                     isPlaying = isPlaying,
                     onClick = {
                         val tracks = getTracks(player, C.TRACK_TYPE_TEXT)
-                        navigator.navigate(VideoPlayerTrackSelectorDialogDestination(C.TRACK_TYPE_TEXT, tracks))
+                        navigator.navigate(
+                            VideoPlayerTrackSelectorDialogDestination(
+                                C.TRACK_TYPE_TEXT,
+                                tracks,
+                            ),
+                        )
+                    },
+                    modifier = Modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
+                        down = second
+                    },
+                )
+                VideoPlayerMediaButton(
+                    icon = painterResource(id = R.drawable.ic_gauge),
+                    state = state,
+                    isPlaying = isPlaying,
+                    onClick = {
+                        val tracks = getSpeed(speed)
+                        navigator.navigate(
+                            VideoPlayerTrackSelectorDialogDestination(
+                                SPEED_SELECT,
+                                tracks,
+                            ),
+                        )
+                    },
+                    modifier = Modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
+                        down = second
                     },
                 )
             }
@@ -267,48 +343,91 @@ fun VideoPlayerControls(
     )
 }
 
-private fun Modifier.dPadEvents(
+private fun Modifier.keyboardEvents(
     exoPlayer: Player,
     videoPlayerState: VideoPlayerState,
-): Modifier = this.handleDPadKeyEvents(
-    onLeft = {},
-    onRight = {},
-    onUp = {},
-    onDown = {},
-    onEnter = {
-        exoPlayer.pause()
-        videoPlayerState.showControls()
-    },
-)
+): Modifier =
+    this.handleDPadKeyEvents(
+        onLeft = {
+            videoPlayerState.quickSeekMode()
+        },
+        onRight = {
+            videoPlayerState.quickSeekMode()
+        },
+        onUp = {
+            videoPlayerState.showControls(Int.MAX_VALUE)
+        },
+        onDown = {
+            videoPlayerState.showControls(Int.MAX_VALUE)
+        },
+        onEnter = {
+            exoPlayer.pause()
+            videoPlayerState.showControls()
+        },
+    ).handleMenuKeyEvents(
+        onMenu = {
+            if (videoPlayerState.controlsVisible) {
+                videoPlayerState.hideControls()
+            } else {
+                videoPlayerState.showControls()
+            }
+        },
+    )
 
-@androidx.annotation.OptIn(UnstableApi::class)
-private fun getTracks(player: Player, type: Int): Array<Track> {
+@OptIn(UnstableApi::class)
+private fun getTracks(
+    player: Player,
+    type: Int,
+): Array<Track> {
     val tracks = arrayListOf<Track>()
     for (groupIndex in 0 until player.currentTracks.groups.count()) {
         val group = player.currentTracks.groups[groupIndex]
         if (group.type == type) {
             val format = group.mediaTrackGroup.getFormat(0)
 
-            val track = Track(
-                id = groupIndex,
-                label = format.label,
-                language = Locale(format.language.toString()).displayLanguage,
-                codec = format.codecs,
-                selected = group.isSelected,
-                supported = group.isSupported,
-            )
+            val track =
+                Track(
+                    id = groupIndex,
+                    label = format.label,
+                    language = Locale(format.language.toString()).displayLanguage,
+                    codec = format.codecs,
+                    selected = group.isSelected,
+                    supported = group.isSupported,
+                )
 
             tracks.add(track)
         }
     }
 
-    val noneTrack = Track(
-        id = -1,
-        label = null,
-        language = null,
-        codec = null,
-        selected = !tracks.any { it.selected },
-        supported = true,
-    )
+    val noneTrack =
+        Track(
+            id = -1,
+            label = null,
+            language = null,
+            codec = null,
+            selected = !tracks.any { it.selected },
+            supported = true,
+        )
     return arrayOf(noneTrack) + tracks
+}
+
+@OptIn(UnstableApi::class)
+private fun getSpeed(currentSpeed: Float): Array<Track> {
+    val tracks = arrayListOf<Track>()
+    for (groupIndex in 0 until speedTexts.count()) {
+        val speedNumber = speedNumbers[groupIndex]
+
+        val track =
+            Track(
+                id = groupIndex,
+                label = "",
+                language = speedTexts[groupIndex],
+                codec = "",
+                selected = currentSpeed == speedNumber,
+                supported = true,
+            )
+        tracks.add(track)
+    }
+
+    return tracks.toTypedArray()
 }

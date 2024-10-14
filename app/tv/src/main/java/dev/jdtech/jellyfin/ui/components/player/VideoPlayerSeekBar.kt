@@ -16,9 +16,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -27,14 +28,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import dev.jdtech.jellyfin.ui.theme.FindroidTheme
+import dev.jdtech.jellyfin.utils.handleBackKeyEvents
 import dev.jdtech.jellyfin.utils.handleDPadKeyEvents
+import kotlin.time.Duration
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun VideoPlayerSeekBar(
     progress: Float,
     onSeek: (seekProgress: Float) -> Unit,
     state: VideoPlayerState,
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester,
+    contentDuration: Duration,
+    seekBackIncrement: Long,
+    seekForwardIncrement: Long,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var isSelected by remember { mutableStateOf(false) }
@@ -57,17 +64,27 @@ fun VideoPlayerSeekBar(
             state.showControls(seconds = Int.MAX_VALUE)
         }
     }
-
+    LaunchedEffect(state.controlsVisible && state.quickSeek) {
+        if (state.quickSeek && state.controlsVisible) {
+            isSelected = true
+            seekProgress = progress
+        }
+        if (!state.quickSeek) {
+            isSelected = false
+        }
+    }
     Canvas(
-        modifier = Modifier
+        modifier = modifier
+            .focusRequester(focusRequester)
             .fillMaxWidth()
             .height(animatedHeight)
             .padding(horizontal = 4.dp)
+            .focusable(interactionSource = interactionSource)
             .handleDPadKeyEvents(
                 onEnter = {
                     if (isSelected) {
                         onSeek(seekProgress)
-                        focusManager.moveFocus(FocusDirection.Exit)
+                        focusRequester.freeFocus()
                     } else {
                         seekProgress = progress
                     }
@@ -75,20 +92,33 @@ fun VideoPlayerSeekBar(
                 },
                 onLeft = {
                     if (isSelected) {
-                        seekProgress = (seekProgress - 0.05f).coerceAtLeast(0f)
+                        seekProgress =
+                            (seekProgress - (seekBackIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtLeast(
+                                0f,
+                            )
                     } else {
                         focusManager.moveFocus(FocusDirection.Left)
                     }
                 },
                 onRight = {
                     if (isSelected) {
-                        seekProgress = (seekProgress + 0.05f).coerceAtMost(1f)
+                        seekProgress =
+                            (seekProgress + (seekForwardIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtMost(
+                                1f,
+                            )
                     } else {
                         focusManager.moveFocus(FocusDirection.Right)
                     }
                 },
             )
-            .focusable(interactionSource = interactionSource),
+            .handleBackKeyEvents(
+                onBack = {
+                    if (state.controlsVisible) {
+                        state.hideControls()
+                    }
+                },
+            ),
+
     ) {
         val yOffset = size.height.div(2)
         drawLine(
@@ -127,6 +157,10 @@ fun VideoPlayerSeekBarPreview() {
             progress = 0.4f,
             onSeek = {},
             state = rememberVideoPlayerState(),
+            seekForwardIncrement = 10L,
+            seekBackIncrement = 5L,
+            focusRequester = FocusRequester(),
+            contentDuration = Duration.parse("23m 40s"),
         )
     }
 }

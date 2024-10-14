@@ -45,8 +45,6 @@ class VideoPlayerState internal constructor(
 
     private val channel = Channel<Int>(CONFLATED)
 
-    private val seekChannel = Channel<Int>(CONFLATED)
-
     @OptIn(FlowPreview::class)
     suspend fun observe() {
         channel.consumeAsFlow()
@@ -54,15 +52,6 @@ class VideoPlayerState internal constructor(
             .collect {
                 _controlsVisible = false
                 _quickSeek = false
-            }
-    }
-
-    @OptIn(FlowPreview::class)
-    suspend fun effectSeek() {
-        seekChannel.consumeAsFlow()
-            .debounce { it.toLong() * 1000 }
-            .collect {
-                _seeking = false
             }
     }
 }
@@ -76,6 +65,4 @@ fun rememberVideoPlayerState(
     }
         .also {
             LaunchedEffect(it) { it.observe() }
-        }.also {
-            LaunchedEffect(it) { it.effectSeek() }
         }

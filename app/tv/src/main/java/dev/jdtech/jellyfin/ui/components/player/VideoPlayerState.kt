@@ -37,11 +37,6 @@ class VideoPlayerState internal constructor(
         _quickSeek = true
         channel.trySend(Int.MAX_VALUE)
     }
-    fun quitQuickSeekMode() {
-        _quickSeek = false
-        channel.trySend(2)
-    }
-
 
     private val channel = Channel<Int>(CONFLATED)
 

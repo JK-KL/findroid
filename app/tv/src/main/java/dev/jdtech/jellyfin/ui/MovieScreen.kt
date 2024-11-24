@@ -391,10 +391,6 @@ private fun MovieScreenLayout(
                     }
                 }
             }
-
-            LaunchedEffect(true) {
-                focusRequester.requestFocus()
-            }
         }
 
         is MovieViewModel.UiState.Error -> Text(text = uiState.error.toString())

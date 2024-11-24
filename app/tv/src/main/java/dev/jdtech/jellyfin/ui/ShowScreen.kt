@@ -432,10 +432,6 @@ private fun ShowScreenLayout(
                     }
                 }
             }
-
-            LaunchedEffect(true) {
-                focusRequester.requestFocus()
-            }
         }
 
         is ShowViewModel.UiState.Error -> Text(text = uiState.error.toString())

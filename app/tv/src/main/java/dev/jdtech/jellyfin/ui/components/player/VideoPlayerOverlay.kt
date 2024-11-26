@@ -32,7 +32,7 @@ fun VideoPlayerOverlay(
     modifier: Modifier = Modifier,
     state: VideoPlayerState = rememberVideoPlayerState(),
     focusRequester: FocusRequester = remember { FocusRequester() },
-    controls: @Composable () -> Unit = {}
+    controls: @Composable () -> Unit = {},
 ) {
     LaunchedEffect(state.controlsVisible) {
         if (state.controlsVisible) {

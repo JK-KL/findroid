@@ -163,15 +163,14 @@ fun PlayerScreen(
         }
     }
 
-
-
     Box(
         modifier =
-            Modifier
-                .keyboardEvents(
-                    exoPlayer = viewModel.player,
-                    videoPlayerState = videoPlayerState,
-                ).focusable(),
+        Modifier
+            .keyboardEvents(
+                exoPlayer = viewModel.player,
+                videoPlayerState = videoPlayerState,
+            )
+            .focusable(),
     ) {
         AndroidView(
             factory = { context ->
@@ -202,8 +201,8 @@ fun PlayerScreen(
                 }
             },
             modifier =
-                Modifier
-                    .fillMaxSize(),
+            Modifier
+                .fillMaxSize(),
         )
         val focusRequester = remember { FocusRequester() }
 
@@ -275,11 +274,14 @@ fun VideoPlayerControls(
                 onSeek = { player.seekTo(player.duration.times(it).toLong()) },
                 contentProgress = contentCurrentPosition.milliseconds,
                 contentDuration = player.duration.milliseconds,
-                seekBackIncrement=player.seekBackIncrement,
-                seekForwardIncrement=player.seekForwardIncrement,
-                modifier = Modifier.focusRequester(focusRequester).focusRequester(second).focusProperties {
-                    up = first
-                },
+                seekBackIncrement = player.seekBackIncrement,
+                seekForwardIncrement = player.seekForwardIncrement,
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .focusRequester(second)
+                    .focusProperties {
+                        up = first
+                    },
             )
         },
         mediaActions = {
@@ -299,10 +301,13 @@ fun VideoPlayerControls(
                             ),
                         )
                     },
-                    modifier = Modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
-                        left = FocusRequester.Cancel
-                        down = second
-                    },
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .focusRequester(first)
+                        .focusProperties {
+                            left = FocusRequester.Cancel
+                            down = second
+                        },
                 )
                 VideoPlayerMediaButton(
                     icon = painterResource(id = R.drawable.ic_closed_caption),
@@ -317,9 +322,12 @@ fun VideoPlayerControls(
                             ),
                         )
                     },
-                    modifier = Modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
-                        down = second
-                    },
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .focusRequester(first)
+                        .focusProperties {
+                            down = second
+                        },
                 )
                 VideoPlayerMediaButton(
                     icon = painterResource(id = R.drawable.ic_gauge),
@@ -334,9 +342,12 @@ fun VideoPlayerControls(
                             ),
                         )
                     },
-                    modifier = Modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
-                        down = second
-                    },
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .focusRequester(first)
+                        .focusProperties {
+                            down = second
+                        },
                 )
             }
         },
@@ -347,32 +358,34 @@ private fun Modifier.keyboardEvents(
     exoPlayer: Player,
     videoPlayerState: VideoPlayerState,
 ): Modifier =
-    this.handleDPadKeyEvents(
-        onLeft = {
-            videoPlayerState.quickSeekMode()
-        },
-        onRight = {
-            videoPlayerState.quickSeekMode()
-        },
-        onUp = {
-            videoPlayerState.showControls(Int.MAX_VALUE)
-        },
-        onDown = {
-            videoPlayerState.showControls(Int.MAX_VALUE)
-        },
-        onEnter = {
-            exoPlayer.pause()
-            videoPlayerState.showControls()
-        },
-    ).handleMenuKeyEvents(
-        onMenu = {
-            if (videoPlayerState.controlsVisible) {
-                videoPlayerState.hideControls()
-            } else {
+    this
+        .handleDPadKeyEvents(
+            onLeft = {
+                videoPlayerState.quickSeekMode()
+            },
+            onRight = {
+                videoPlayerState.quickSeekMode()
+            },
+            onUp = {
+                videoPlayerState.showControls(Int.MAX_VALUE)
+            },
+            onDown = {
+                videoPlayerState.showControls(Int.MAX_VALUE)
+            },
+            onEnter = {
+                exoPlayer.pause()
                 videoPlayerState.showControls()
-            }
-        },
-    )
+            },
+        )
+        .handleMenuKeyEvents(
+            onMenu = {
+                if (videoPlayerState.controlsVisible) {
+                    videoPlayerState.hideControls()
+                } else {
+                    videoPlayerState.showControls()
+                }
+            },
+        )
 
 @OptIn(UnstableApi::class)
 private fun getTracks(

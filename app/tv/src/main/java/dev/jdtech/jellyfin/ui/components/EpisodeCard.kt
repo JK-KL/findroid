@@ -35,10 +35,12 @@ import dev.jdtech.jellyfin.ui.theme.spacings
 fun EpisodeCard(
     episode: FindroidEpisode,
     onClick: (FindroidEpisode) -> Unit,
-    onLongClick: (FindroidEpisode) -> Unit
+    onLongClick: (FindroidEpisode) -> Unit,
 ) {
     Surface(
-        onLongClick = {onLongClick(episode)},
+        onLongClick = {
+            onLongClick(episode)
+        },
         onClick = { onClick(episode) },
         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(10.dp)),
         colors = ClickableSurfaceDefaults.colors(
@@ -105,7 +107,7 @@ private fun ItemCardPreviewEpisode() {
         EpisodeCard(
             episode = dummyEpisode,
             onClick = {},
-            onLongClick = {}
+            onLongClick = {},
         )
     }
 }

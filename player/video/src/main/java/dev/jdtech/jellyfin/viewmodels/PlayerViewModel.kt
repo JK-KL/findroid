@@ -36,12 +36,12 @@ class PlayerViewModel @Inject internal constructor(
     fun loadPlayerItems(
         item: FindroidItem,
         mediaSourceIndex: Int? = null,
-        replay: Boolean=false,
+        replay: Boolean = false,
     ) {
         Timber.d("Loading player items for item ${item.id}")
 
         viewModelScope.launch {
-            var playbackPosition = 0L;
+            var playbackPosition = 0L
             if (!replay) {
                 playbackPosition = item.playbackPositionTicks.div(10000)
             }
@@ -124,7 +124,7 @@ class PlayerViewModel @Inject internal constructor(
                 fields = listOf(
                     ItemFields.MEDIA_SOURCES,
                     ItemFields.CHAPTERS,
-                    ItemFields.TRICKPLAY
+                    ItemFields.TRICKPLAY,
                 ),
                 startItemId = item.id,
                 limit = if (userConfig?.enableNextEpisodeAutoPlay != false) null else 1,
@@ -175,6 +175,7 @@ class PlayerViewModel @Inject internal constructor(
                     )
                 }
             }
+
             else -> null
         }
         return PlayerItem(

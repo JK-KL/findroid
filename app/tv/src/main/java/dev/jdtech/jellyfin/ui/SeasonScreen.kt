@@ -60,6 +60,7 @@ fun SeasonScreen(
             is PlayerItemsEvent.PlayerItemsReady -> {
                 navigator.navigate(PlayerActivityDestination(items = ArrayList(event.items)))
             }
+
             is PlayerItemsEvent.PlayerItemsError -> Unit
         }
     }
@@ -75,7 +76,7 @@ fun SeasonScreen(
         },
         onLongClick = { episode ->
             playerViewModel.loadPlayerItems(item = episode, replay = true)
-        }
+        },
     )
 }
 
@@ -86,8 +87,7 @@ private fun SeasonScreenLayout(
     uiState: SeasonViewModel.UiState,
     onClick: (FindroidEpisode) -> Unit,
     onLongClick: (FindroidEpisode) -> Unit,
-
-    ) {
+) {
     val focusRequester = remember { FocusRequester() }
 
     when (uiState) {
@@ -129,11 +129,15 @@ private fun SeasonScreenLayout(
                     items(episodes) { episodeItem ->
                         when (episodeItem) {
                             is EpisodeItem.Episode -> {
-                                EpisodeCard(episode = episodeItem.episode,
+                                EpisodeCard(
+                                    episode = episodeItem.episode,
                                     onClick = {
                                         onClick(episodeItem.episode)
                                     },
-                                    onLongClick = { onLongClick(episodeItem.episode) })
+                                    onLongClick = {
+                                        onLongClick(episodeItem.episode)
+                                    },
+                                )
                             }
 
                             else -> Unit
@@ -160,7 +164,7 @@ private fun SeasonScreenLayoutPreview() {
             seasonName = "Season 1",
             uiState = SeasonViewModel.UiState.Normal(dummyEpisodeItems),
             onClick = {},
-            onLongClick = {}
+            onLongClick = {},
         )
     }
 }

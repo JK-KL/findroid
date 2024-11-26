@@ -126,10 +126,12 @@ constructor(
         val actors: List<BaseItemPerson>
         withContext(Dispatchers.Default) {
             actors = item.people.filter {
-                it.type == PersonKind.ACTOR }
+                it.type == PersonKind.ACTOR
+            }
         }
         return actors
     }
+
     private suspend fun getPeople(item: FindroidMovie): List<FindroidPerson> {
         val perple: List<FindroidPerson>
         withContext(Dispatchers.Default) {
@@ -137,6 +139,7 @@ constructor(
         }
         return perple
     }
+
     private suspend fun getDirector(item: FindroidMovie): BaseItemPerson? {
         val director: BaseItemPerson?
         withContext(Dispatchers.Default) {
@@ -294,6 +297,7 @@ constructor(
                         updateUiPlayedState(originalPlayedState)
                     }
                 }
+
                 true -> {
                     try {
                         repository.markAsPlayed(item.id)
@@ -330,6 +334,7 @@ constructor(
                         updateUiFavoriteState(originalFavoriteState)
                     }
                 }
+
                 true -> {
                     try {
                         repository.markAsFavorite(item.id)
@@ -374,7 +379,12 @@ constructor(
 
     fun cancelDownload() {
         viewModelScope.launch {
-            downloader.cancelDownload(item, item.sources.first { it.type == FindroidSourceType.LOCAL })
+            downloader.cancelDownload(
+                item,
+                item.sources.first {
+                    it.type == FindroidSourceType.LOCAL
+                },
+            )
             loadData(item.id)
         }
     }

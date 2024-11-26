@@ -77,27 +77,32 @@ fun VideoPlayerTrackSelectorDialog(
                 items(tracks) { track ->
                     Surface(
                         onClick = {
-                            resultNavigator.navigateBack(result = VideoPlayerTrackSelectorDialogResult(trackType, track.id))
+                            resultNavigator.navigateBack(
+                                result = VideoPlayerTrackSelectorDialogResult(
+                                    trackType,
+                                    track.id,
+                                ),
+                            )
                         },
                         enabled = track.supported,
                         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(4.dp)),
                         colors =
-                            ClickableSurfaceDefaults.colors(
-                                containerColor = Color.Transparent,
-                                focusedContainerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent,
-                            ),
+                        ClickableSurfaceDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                        ),
                         border =
-                            ClickableSurfaceDefaults.border(
-                                focusedBorder =
-                                    Border(
-                                        BorderStroke(
-                                            4.dp,
-                                            Color.White,
-                                        ),
-                                        shape = RoundedCornerShape(10.dp),
-                                    ),
+                        ClickableSurfaceDefaults.border(
+                            focusedBorder =
+                            Border(
+                                BorderStroke(
+                                    4.dp,
+                                    Color.White,
+                                ),
+                                shape = RoundedCornerShape(10.dp),
                             ),
+                        ),
                         scale = ClickableSurfaceScale.None,
                     ) {
                         Row(
@@ -112,11 +117,11 @@ fun VideoPlayerTrackSelectorDialog(
                             Spacer(modifier = Modifier.width(MaterialTheme.spacings.medium))
                             Text(
                                 text =
-                                    listOf(track.label, track.language, track.codec)
-                                        .mapNotNull { it }
-                                        .joinToString(" - ")
-                                        .removePrefix(" - ").removeSuffix(" - ")
-                                        .ifEmpty { stringResource(id = PlayerVideoR.string.none) },
+                                listOf(track.label, track.language, track.codec)
+                                    .mapNotNull { it }
+                                    .joinToString(" - ")
+                                    .removePrefix(" - ").removeSuffix(" - ")
+                                    .ifEmpty { stringResource(id = PlayerVideoR.string.none) },
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                         }
@@ -134,32 +139,32 @@ private fun VideoPlayerTrackSelectorDialogPreview() {
         VideoPlayerTrackSelectorDialog(
             trackType = C.TRACK_TYPE_AUDIO,
             tracks =
-                arrayOf(
-                    Track(
-                        id = 0,
-                        label = null,
-                        language = "English",
-                        codec = "flac",
-                        selected = true,
-                        supported = true,
-                    ),
-                    Track(
-                        id = 0,
-                        label = null,
-                        language = "Japanese",
-                        codec = "flac",
-                        selected = false,
-                        supported = true,
-                    ),
-                    Track(
-                        id = 0,
-                        label = null,
-                        language = "English",
-                        codec = "truehd",
-                        selected = false,
-                        supported = false,
-                    ),
+            arrayOf(
+                Track(
+                    id = 0,
+                    label = null,
+                    language = "English",
+                    codec = "flac",
+                    selected = true,
+                    supported = true,
                 ),
+                Track(
+                    id = 0,
+                    label = null,
+                    language = "Japanese",
+                    codec = "flac",
+                    selected = false,
+                    supported = true,
+                ),
+                Track(
+                    id = 0,
+                    label = null,
+                    language = "English",
+                    codec = "truehd",
+                    selected = false,
+                    supported = false,
+                ),
+            ),
             resultNavigator = EmptyResultBackNavigator(),
         )
     }

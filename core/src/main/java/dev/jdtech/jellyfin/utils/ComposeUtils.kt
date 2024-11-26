@@ -58,16 +58,73 @@ fun Modifier.handleDPadKeyEvents(
                     return@onPreviewKeyEvent true
                 }
             }
+
             KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT -> {
                 onRight?.apply {
                     onActionUp(::invoke)
                     return@onPreviewKeyEvent true
                 }
             }
+
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 onEnter?.apply {
                     onActionUp(::invoke)
                     return@onPreviewKeyEvent true
+                }
+            }
+        }
+    }
+    false
+}
+
+fun Modifier.handleDPadKeyEvents(
+    onLeftDown: (() -> Unit)? = null,
+    onLeftUp: (() -> Unit)? = null,
+    onRightDown: (() -> Unit)? = null,
+    onRightUp: (() -> Unit)? = null,
+    onEnterDown: (() -> Unit)? = null,
+    onEnterUp: (() -> Unit)? = null,
+) = onPreviewKeyEvent {
+    fun onActionUp(block: () -> Unit) {
+        if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) block()
+    }
+
+    if (DPadEventsKeyCodes.contains(it.nativeKeyEvent.keyCode)) {
+        when (it.nativeKeyEvent.keyCode) {
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_LEFT -> {
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                    onLeftDown?.apply {
+                        return@onPreviewKeyEvent true
+                    }
+                }
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                    onLeftUp?.apply {
+                        return@onPreviewKeyEvent true
+                    }
+                }
+            }
+
+            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT -> {
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                    onRightDown?.apply {
+                        invoke()
+                        return@onPreviewKeyEvent true
+                    }
+                }
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                    onRightUp?.apply {
+                        invoke()
+                        return@onPreviewKeyEvent true
+                    }
+                }
+            }
+
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                    onEnterDown?.apply { return@onPreviewKeyEvent true }
+                }
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                    onEnterUp?.apply { return@onPreviewKeyEvent true }
                 }
             }
         }
@@ -110,15 +167,19 @@ fun Modifier.handleDPadKeyEvents(
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_LEFT -> {
                 onLeft?.invoke().also { return@onKeyEvent true }
             }
+
             KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT -> {
                 onRight?.invoke().also { return@onKeyEvent true }
             }
+
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_UP -> {
                 onUp?.invoke().also { return@onKeyEvent true }
             }
+
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_DOWN -> {
                 onDown?.invoke().also { return@onKeyEvent true }
             }
+
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 onEnter?.invoke().also { return@onKeyEvent true }
             }

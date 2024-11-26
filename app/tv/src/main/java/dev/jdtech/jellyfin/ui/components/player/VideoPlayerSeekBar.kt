@@ -17,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -59,6 +58,7 @@ fun VideoPlayerSeekBar(
     var seekProgress by remember { mutableFloatStateOf(0f) }
     val focusManager = LocalFocusManager.current
 
+    var isPress by remember { mutableStateOf(false) }
     LaunchedEffect(isSelected) {
         if (isSelected) {
             state.showControls(seconds = Int.MAX_VALUE)
@@ -73,6 +73,12 @@ fun VideoPlayerSeekBar(
             isSelected = false
         }
     }
+    LaunchedEffect(isPress) {
+        while (isPress) {
+            println("key press")
+        }
+    }
+
     Canvas(
         modifier = modifier
             .focusRequester(focusRequester)
@@ -81,36 +87,53 @@ fun VideoPlayerSeekBar(
             .padding(horizontal = 4.dp)
             .focusable(interactionSource = interactionSource)
             .handleDPadKeyEvents(
-                onEnter = {
-                    if (isSelected) {
-                        onSeek(seekProgress)
-                        focusRequester.freeFocus()
-                    } else {
-                        seekProgress = progress
-                    }
-                    isSelected = !isSelected
+                onRightDown = {
+                    isPress = true
+                    println("key press1")
                 },
-                onLeft = {
-                    if (isSelected) {
-                        seekProgress =
-                            (seekProgress - (seekBackIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtLeast(
-                                0f,
-                            )
-                    } else {
-                        focusManager.moveFocus(FocusDirection.Left)
-                    }
-                },
-                onRight = {
-                    if (isSelected) {
-                        seekProgress =
-                            (seekProgress + (seekForwardIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtMost(
-                                1f,
-                            )
-                    } else {
-                        focusManager.moveFocus(FocusDirection.Right)
-                    }
+                onRightUp = {
+                    isPress = false
+                    println("key up")
                 },
             )
+//            .handleDPadKeyEvents(
+//                onEnter = {
+//                    if (isSelected) {
+//                        onSeek(seekProgress)
+//                        focusRequester.freeFocus()
+//                    } else {
+//                        seekProgress = progress
+//                    }
+//                    isSelected = !isSelected
+//                },
+//                onLeft = {
+//                    if (isSelected) {
+//                        seekProgress =
+//                            (seekProgress - (seekBackIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtLeast(
+//                                0f,
+//                            )
+//                    } else {
+//                        focusManager.moveFocus(FocusDirection.Left)
+//                    }
+//                },
+//                onRight = {
+//                    if (isSelected) {
+//
+//                        while (isPress){
+//                            seekProgress =
+//                                (seekProgress + (seekForwardIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtMost(
+//                                    1f,
+//                                )
+//
+//                        }
+//                    } else {
+//                        focusManager.moveFocus(FocusDirection.Right)
+//                        if (!isSelected) {
+//                            isSelected = true;
+//                        }
+//                    }
+//                },
+//            )
             .handleBackKeyEvents(
                 onBack = {
                     if (state.controlsVisible) {
@@ -118,7 +141,6 @@ fun VideoPlayerSeekBar(
                     }
                 },
             ),
-
     ) {
         val yOffset = size.height.div(2)
         drawLine(

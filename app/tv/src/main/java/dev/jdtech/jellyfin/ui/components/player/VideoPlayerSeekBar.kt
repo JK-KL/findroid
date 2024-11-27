@@ -2,6 +2,7 @@ package dev.jdtech.jellyfin.ui.components.player
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -9,14 +10,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -31,6 +35,7 @@ import dev.jdtech.jellyfin.utils.handleBackKeyEvents
 import dev.jdtech.jellyfin.utils.handleDPadKeyEvents
 import kotlin.time.Duration
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoPlayerSeekBar(
     progress: Float,
@@ -58,7 +63,6 @@ fun VideoPlayerSeekBar(
     var seekProgress by remember { mutableFloatStateOf(0f) }
     val focusManager = LocalFocusManager.current
 
-    var isPress by remember { mutableStateOf(false) }
     LaunchedEffect(isSelected) {
         if (isSelected) {
             state.showControls(seconds = Int.MAX_VALUE)
@@ -73,12 +77,40 @@ fun VideoPlayerSeekBar(
             isSelected = false
         }
     }
-    LaunchedEffect(isPress) {
-        while (isPress) {
-            println("key press")
+
+    var isLeftPress by remember { mutableStateOf(false) }
+    var isRightPress by remember { mutableStateOf(false) }
+
+    // make sure is a long press intent
+    var leftPressCount by remember { mutableIntStateOf(0) }
+    var rightPressCount by remember { mutableIntStateOf(0) }
+    if (isLeftPress) {
+        leftPressCount += 1
+        if (leftPressCount > 3 && isSelected) {
+            seekProgress =
+                (seekProgress - (seekBackIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtLeast(
+                    0f,
+                )
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                onSeek(seekProgress)
+            }
+        }
+    } else if (isRightPress) {
+        rightPressCount += 1
+        if (rightPressCount > 3 && isSelected) {
+            seekProgress =
+                (seekProgress + (seekForwardIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtMost(
+                    1f,
+                )
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                onSeek(seekProgress)
+            }
         }
     }
-
     Canvas(
         modifier = modifier
             .focusRequester(focusRequester)
@@ -88,52 +120,35 @@ fun VideoPlayerSeekBar(
             .focusable(interactionSource = interactionSource)
             .handleDPadKeyEvents(
                 onRightDown = {
-                    isPress = true
-                    println("key press1")
+                    isRightPress = true
                 },
                 onRightUp = {
-                    isPress = false
-                    println("key up")
+                    isRightPress = false
+                    if (!isSelected) {
+                        focusManager.moveFocus(FocusDirection.Right)
+                    }
+                },
+                onLeftDown = {
+                    isLeftPress = true
+                },
+                onLeftUp = {
+                    isLeftPress = false
+                    if (!isSelected) {
+                        focusManager.moveFocus(FocusDirection.Left)
+                    }
+                },
+                onEnterDown = {
+                    if (isSelected) {
+                        focusRequester.freeFocus()
+                    } else {
+                        seekProgress = progress
+                    }
+                    isSelected = !isSelected
+                },
+                onEnterUp = {
+                    // ignore
                 },
             )
-//            .handleDPadKeyEvents(
-//                onEnter = {
-//                    if (isSelected) {
-//                        onSeek(seekProgress)
-//                        focusRequester.freeFocus()
-//                    } else {
-//                        seekProgress = progress
-//                    }
-//                    isSelected = !isSelected
-//                },
-//                onLeft = {
-//                    if (isSelected) {
-//                        seekProgress =
-//                            (seekProgress - (seekBackIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtLeast(
-//                                0f,
-//                            )
-//                    } else {
-//                        focusManager.moveFocus(FocusDirection.Left)
-//                    }
-//                },
-//                onRight = {
-//                    if (isSelected) {
-//
-//                        while (isPress){
-//                            seekProgress =
-//                                (seekProgress + (seekForwardIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtMost(
-//                                    1f,
-//                                )
-//
-//                        }
-//                    } else {
-//                        focusManager.moveFocus(FocusDirection.Right)
-//                        if (!isSelected) {
-//                            isSelected = true;
-//                        }
-//                    }
-//                },
-//            )
             .handleBackKeyEvents(
                 onBack = {
                     if (state.controlsVisible) {

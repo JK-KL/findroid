@@ -85,20 +85,18 @@ fun Modifier.handleDPadKeyEvents(
     onEnterDown: (() -> Unit)? = null,
     onEnterUp: (() -> Unit)? = null,
 ) = onPreviewKeyEvent {
-    fun onActionUp(block: () -> Unit) {
-        if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) block()
-    }
-
     if (DPadEventsKeyCodes.contains(it.nativeKeyEvent.keyCode)) {
         when (it.nativeKeyEvent.keyCode) {
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_SYSTEM_NAVIGATION_LEFT -> {
                 if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
                     onLeftDown?.apply {
+                        invoke()
                         return@onPreviewKeyEvent true
                     }
                 }
                 if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                     onLeftUp?.apply {
+                        invoke()
                         return@onPreviewKeyEvent true
                     }
                 }
@@ -121,10 +119,16 @@ fun Modifier.handleDPadKeyEvents(
 
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
-                    onEnterDown?.apply { return@onPreviewKeyEvent true }
+                    onEnterDown?.apply {
+                        invoke()
+                        return@onPreviewKeyEvent true
+                    }
                 }
                 if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
-                    onEnterUp?.apply { return@onPreviewKeyEvent true }
+                    onEnterUp?.apply {
+                        invoke()
+                        return@onPreviewKeyEvent true
+                    }
                 }
             }
         }

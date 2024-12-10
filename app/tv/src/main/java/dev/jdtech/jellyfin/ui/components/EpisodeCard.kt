@@ -1,6 +1,8 @@
 package dev.jdtech.jellyfin.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,11 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Border
-import androidx.tv.material3.ClickableSurfaceDefaults
-import androidx.tv.material3.ClickableSurfaceScale
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import dev.jdtech.jellyfin.models.FindroidEpisode
 import dev.jdtech.jellyfin.ui.dummy.dummyEpisode
@@ -34,49 +32,61 @@ import dev.jdtech.jellyfin.ui.theme.spacings
 @Composable
 fun EpisodeCard(
     episode: FindroidEpisode,
-    onClick: (FindroidEpisode) -> Unit,
-    onLongClick: (FindroidEpisode) -> Unit,
+    index: Int,
+    currentIndex: Int,
+    onPlayClick: (FindroidEpisode) -> Unit,
+    onReplayClick: (FindroidEpisode) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Surface(
-        onLongClick = {
-            onLongClick(episode)
-        },
-        onClick = { onClick(episode) },
-        shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(10.dp)),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = Color.Transparent,
-            focusedContainerColor = Color.Transparent,
-        ),
-        border = ClickableSurfaceDefaults.border(
-            focusedBorder = Border(
-                BorderStroke(
-                    4.dp,
-                    Color.White,
-                ),
-                shape = RoundedCornerShape(10.dp),
-            ),
-        ),
-        scale = ClickableSurfaceScale.None,
-        modifier = Modifier
+    Row(
+        modifier = modifier
+            .border(
+                border = if ((index - 1) == currentIndex) {
+                    BorderStroke(
+                        4.dp,
+                        Color.White,
+                    )
+                } else {
+                    BorderStroke(
+                        0.dp,
+                        Color.Transparent,
+                    )
+                },
+                shape = if ((index - 1) == currentIndex) {
+                    RoundedCornerShape(10.dp)
+                } else {
+                    RoundedCornerShape(
+                        0.dp,
+                    )
+                },
+            )
+            .background(color = Color.Transparent)
             .fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(MaterialTheme.spacings.small),
+            modifier = modifier.padding(MaterialTheme.spacings.small),
         ) {
-            Box(modifier = Modifier.width(160.dp)) {
+            Box(modifier = modifier.width(160.dp)) {
                 ItemPoster(
                     item = episode,
                     direction = Direction.HORIZONTAL,
-                    modifier = Modifier.clip(RoundedCornerShape(10.dp)),
+                    modifier = modifier.clip(RoundedCornerShape(10.dp)),
+                )
+                PlayControlHover(
+                    item = episode,
+                    onPlayClick = { onPlayClick(episode) },
+                    onReplayClick = { onReplayClick(episode) },
+                    modifier = modifier
+                        .align(Alignment.Center),
                 )
                 ProgressBadge(
                     item = episode,
-                    modifier = Modifier
+                    modifier = modifier
                         .align(Alignment.TopEnd)
                         .padding(PaddingValues(MaterialTheme.spacings.small)),
                 )
             }
-            Spacer(modifier = Modifier.width(MaterialTheme.spacings.medium))
+            Spacer(modifier = modifier.width(MaterialTheme.spacings.medium))
             Column {
                 Text(
                     text = stringResource(
@@ -106,8 +116,10 @@ private fun ItemCardPreviewEpisode() {
     FindroidTheme {
         EpisodeCard(
             episode = dummyEpisode,
-            onClick = {},
-            onLongClick = {},
+            onPlayClick = {},
+            onReplayClick = {},
+            index = 2,
+            currentIndex = 1,
         )
     }
 }

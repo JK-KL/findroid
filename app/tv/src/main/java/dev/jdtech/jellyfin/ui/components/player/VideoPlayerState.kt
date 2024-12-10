@@ -20,22 +20,12 @@ class VideoPlayerState internal constructor(
     private var _controlsVisible by mutableStateOf(true)
     val controlsVisible get() = _controlsVisible
 
-    private var _quickSeek by mutableStateOf(false)
-    val quickSeek get() = _quickSeek
-
     fun showControls(seconds: Int = hideSeconds) {
         _controlsVisible = true
         channel.trySend(seconds)
     }
     fun hideControls() {
         _controlsVisible = false
-        _quickSeek = false
-    }
-
-    fun quickSeekMode() {
-        _controlsVisible = true
-        _quickSeek = true
-        channel.trySend(Int.MAX_VALUE)
     }
 
     private val channel = Channel<Int>(CONFLATED)
@@ -46,7 +36,6 @@ class VideoPlayerState internal constructor(
             .debounce { it.toLong() * 1000 }
             .collect {
                 _controlsVisible = false
-                _quickSeek = false
             }
     }
 }

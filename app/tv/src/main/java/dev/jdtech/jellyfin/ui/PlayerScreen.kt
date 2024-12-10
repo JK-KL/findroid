@@ -252,8 +252,8 @@ fun VideoPlayerControls(
         }
     }
 
-    LaunchedEffect(state.controlsVisible && state.quickSeek) {
-        if (state.quickSeek && state.controlsVisible) {
+    LaunchedEffect(state.controlsVisible) {
+        if (state.controlsVisible) {
             second.requestFocus()
         }
     }
@@ -305,8 +305,8 @@ fun VideoPlayerControls(
                         .focusRequester(focusRequester)
                         .focusRequester(first)
                         .focusProperties {
-                            left = FocusRequester.Cancel
                             down = second
+                            left = FocusRequester.Cancel
                         },
                 )
                 VideoPlayerMediaButton(
@@ -347,6 +347,7 @@ fun VideoPlayerControls(
                         .focusRequester(first)
                         .focusProperties {
                             down = second
+                            right = FocusRequester.Cancel
                         },
                 )
             }
@@ -361,10 +362,10 @@ private fun Modifier.keyboardEvents(
     this
         .handleDPadKeyEvents(
             onLeft = {
-                videoPlayerState.quickSeekMode()
+                videoPlayerState.showControls()
             },
             onRight = {
-                videoPlayerState.quickSeekMode()
+                videoPlayerState.showControls()
             },
             onUp = {
                 videoPlayerState.showControls(Int.MAX_VALUE)
@@ -374,7 +375,7 @@ private fun Modifier.keyboardEvents(
             },
             onEnter = {
                 exoPlayer.pause()
-                videoPlayerState.showControls()
+                videoPlayerState.showControls(Int.MAX_VALUE)
             },
         )
         .handleMenuKeyEvents(

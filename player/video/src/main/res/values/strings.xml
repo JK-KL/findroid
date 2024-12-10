@@ -15,6 +15,8 @@
     <string name="player_controls_skip_credits">Skip credits</string>
     <string name="player_controls_fast_forward">Fast forward</string>
     <string name="player_controls_skip_forward">Skip forward</string>
+    <string name="player_controls_replay">Replay</string>
+    <string name="player_controls_continue">Continue</string>
     <string name="player_trickplay">Trickplay</string>
     <string name="player_controls_progress">Progress bar</string>
 </resources>

@@ -14,7 +14,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -68,25 +67,18 @@ fun VideoPlayerSeekBar(
             state.showControls(seconds = Int.MAX_VALUE)
         }
     }
-    LaunchedEffect(state.controlsVisible && state.quickSeek) {
-        if (state.quickSeek && state.controlsVisible) {
-            isSelected = true
+    LaunchedEffect(isFocused) {
+        if (isFocused) {
             seekProgress = progress
-        }
-        if (!state.quickSeek) {
-            isSelected = false
+            isSelected = true
         }
     }
 
     var isLeftPress by remember { mutableStateOf(false) }
     var isRightPress by remember { mutableStateOf(false) }
 
-    // make sure is a long press intent
-    var leftPressCount by remember { mutableIntStateOf(0) }
-    var rightPressCount by remember { mutableIntStateOf(0) }
     if (isLeftPress) {
-        leftPressCount += 1
-        if (leftPressCount > 3 && isSelected) {
+        if (isSelected) {
             seekProgress =
                 (seekProgress - (seekBackIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtLeast(
                     0f,
@@ -94,12 +86,13 @@ fun VideoPlayerSeekBar(
         }
         DisposableEffect(Unit) {
             onDispose {
-                onSeek(seekProgress)
+                if (isSelected) {
+                    onSeek(seekProgress)
+                }
             }
         }
     } else if (isRightPress) {
-        rightPressCount += 1
-        if (rightPressCount > 3 && isSelected) {
+        if (isSelected) {
             seekProgress =
                 (seekProgress + (seekForwardIncrement.toFloat() / contentDuration.inWholeMilliseconds)).coerceAtMost(
                     1f,
@@ -107,7 +100,9 @@ fun VideoPlayerSeekBar(
         }
         DisposableEffect(Unit) {
             onDispose {
-                onSeek(seekProgress)
+                if (isSelected) {
+                    onSeek(seekProgress)
+                }
             }
         }
     }
@@ -152,7 +147,11 @@ fun VideoPlayerSeekBar(
             .handleBackKeyEvents(
                 onBack = {
                     if (state.controlsVisible) {
-                        state.hideControls()
+                        if (isSelected) {
+                            isSelected = false
+                        } else {
+                            state.hideControls()
+                        }
                     }
                 },
             ),

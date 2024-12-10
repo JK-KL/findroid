@@ -1,5 +1,6 @@
 package dev.jdtech.jellyfin.ui
 
+import android.view.KeyEvent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -7,15 +8,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.nativeKeyCode
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.MaterialTheme
@@ -71,10 +78,10 @@ fun SeasonScreen(
         seriesName = seriesName,
         seasonName = seasonName,
         uiState = delegatedUiState,
-        onClick = { episode ->
+        onPlayClick = { episode ->
             playerViewModel.loadPlayerItems(item = episode)
         },
-        onLongClick = { episode ->
+        onReplayClick = { episode ->
             playerViewModel.loadPlayerItems(item = episode, replay = true)
         },
     )
@@ -85,8 +92,8 @@ private fun SeasonScreenLayout(
     seriesName: String,
     seasonName: String,
     uiState: SeasonViewModel.UiState,
-    onClick: (FindroidEpisode) -> Unit,
-    onLongClick: (FindroidEpisode) -> Unit,
+    onPlayClick: (FindroidEpisode) -> Unit,
+    onReplayClick: (FindroidEpisode) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -115,28 +122,57 @@ private fun SeasonScreenLayout(
                         style = MaterialTheme.typography.headlineMedium,
                     )
                 }
+                val listState = rememberLazyListState()
+                val listSize = remember { mutableIntStateOf(episodes.size) }
+                var currentIndex by remember { mutableIntStateOf(0) }
+
+                LaunchedEffect(currentIndex) {
+                    listState.animateScrollToItem(currentIndex)
+                }
                 LazyColumn(
+                    state = listState,
                     contentPadding = PaddingValues(
                         top = MaterialTheme.spacings.large,
                         bottom = MaterialTheme.spacings.large,
                     ),
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.medium),
+                    userScrollEnabled = false,
                     modifier = Modifier
                         .weight(2f)
                         .padding(end = MaterialTheme.spacings.extraLarge)
-                        .focusRequester(focusRequester),
+                        .focusRequester(focusRequester)
+                        .onPreviewKeyEvent { keyEvent ->
+                            when (keyEvent.key.nativeKeyCode) {
+                                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                    if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                                        currentIndex =
+                                            (++currentIndex).coerceIn(0, listSize.intValue - 1)
+                                    }
+                                }
+
+                                KeyEvent.KEYCODE_DPAD_UP -> {
+                                    if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                                        currentIndex =
+                                            (--currentIndex).coerceIn(0, listSize.intValue - 1)
+                                    }
+                                }
+                            }
+                            false
+                        },
                 ) {
-                    items(episodes) { episodeItem ->
+                    itemsIndexed(episodes) { index, episodeItem ->
                         when (episodeItem) {
                             is EpisodeItem.Episode -> {
                                 EpisodeCard(
                                     episode = episodeItem.episode,
-                                    onClick = {
-                                        onClick(episodeItem.episode)
+                                    onPlayClick = {
+                                        onPlayClick(episodeItem.episode)
                                     },
-                                    onLongClick = {
-                                        onLongClick(episodeItem.episode)
+                                    onReplayClick = {
+                                        onReplayClick(episodeItem.episode)
                                     },
+                                    index = index,
+                                    currentIndex = currentIndex,
                                 )
                             }
 
@@ -163,8 +199,8 @@ private fun SeasonScreenLayoutPreview() {
             seriesName = "86 EIGHTY-SIX",
             seasonName = "Season 1",
             uiState = SeasonViewModel.UiState.Normal(dummyEpisodeItems),
-            onClick = {},
-            onLongClick = {},
+            onReplayClick = {},
+            onPlayClick = {},
         )
     }
 }

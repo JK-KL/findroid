@@ -66,11 +66,6 @@ fun VideoPlayerSeeker(
             first.requestFocus()
         }
     }
-    LaunchedEffect(state.controlsVisible && state.quickSeek) {
-        if (state.quickSeek && state.controlsVisible) {
-            second.requestFocus()
-        }
-    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -79,9 +74,12 @@ fun VideoPlayerSeeker(
             onClick = {
                 onPlayPauseToggle(!isPlaying)
             },
-            modifier = modifier.focusRequester(focusRequester).focusRequester(first).focusProperties {
-                right = second
-            },
+            modifier = modifier
+                .focusRequester(focusRequester)
+                .focusRequester(first)
+                .focusProperties {
+                    right = second
+                },
         ) {
             if (!isPlaying) {
                 Icon(
@@ -117,10 +115,13 @@ fun VideoPlayerSeeker(
                 progress = (contentProgress / contentDuration).toFloat(),
                 onSeek = onSeek,
                 state = state,
-                modifier = modifier.focusRequester(focusRequester).focusRequester(second).focusProperties {
-                    left = first
-                    right = FocusRequester.Cancel
-                },
+                modifier = modifier
+                    .focusRequester(focusRequester)
+                    .focusRequester(second)
+                    .focusProperties {
+                        left = first
+                        right = FocusRequester.Cancel
+                    },
                 focusRequester = focusRequester,
                 contentDuration = contentDuration,
                 seekBackIncrement = seekBackIncrement,

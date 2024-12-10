@@ -193,16 +193,26 @@ private fun ShowScreenLayout(
                 }
                 LazyColumn(
                     state = listState,
-                    contentPadding = PaddingValues(top = 112.dp, bottom = MaterialTheme.spacings.large),
+                    contentPadding = PaddingValues(
+                        top = 112.dp,
+                        bottom = MaterialTheme.spacings.large,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.medium),
                     userScrollEnabled = false,
                     modifier = Modifier.onPreviewKeyEvent { keyEvent ->
                         when (keyEvent.key.nativeKeyCode) {
                             KeyEvent.KEYCODE_DPAD_DOWN -> {
-                                currentIndex = (++currentIndex).coerceIn(0, listSize.intValue - 1)
+                                if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                                    currentIndex =
+                                        (++currentIndex).coerceIn(0, listSize.intValue - 1)
+                                }
                             }
+
                             KeyEvent.KEYCODE_DPAD_UP -> {
-                                currentIndex = (--currentIndex).coerceIn(0, listSize.intValue - 1)
+                                if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                                    currentIndex =
+                                        (--currentIndex).coerceIn(0, listSize.intValue - 1)
+                                }
                             }
                         }
                         false

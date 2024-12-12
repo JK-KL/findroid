@@ -124,7 +124,7 @@ private fun SeasonScreenLayout(
                 }
                 val listState = rememberLazyListState()
                 val listSize = remember { mutableIntStateOf(episodes.size) }
-                var currentIndex by remember { mutableIntStateOf(0) }
+                var currentIndex by remember { mutableIntStateOf(1) }
 
                 LaunchedEffect(currentIndex) {
                     listState.animateScrollToItem(currentIndex)
@@ -146,14 +146,14 @@ private fun SeasonScreenLayout(
                                 KeyEvent.KEYCODE_DPAD_DOWN -> {
                                     if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                                         currentIndex =
-                                            (++currentIndex).coerceIn(0, listSize.intValue - 1)
+                                            (++currentIndex).coerceIn(1, listSize.intValue - 1)
                                     }
                                 }
 
                                 KeyEvent.KEYCODE_DPAD_UP -> {
                                     if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                                         currentIndex =
-                                            (--currentIndex).coerceIn(0, listSize.intValue - 1)
+                                            (--currentIndex).coerceIn(1, listSize.intValue - 1)
                                     }
                                 }
                             }

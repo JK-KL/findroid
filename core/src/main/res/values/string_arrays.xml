@@ -26,4 +26,22 @@
         <item>audiotrack</item>
         <item>opensles</item>
     </string-array>
+    <string-array name="seek_increment">
+        <item>5s</item>
+        <item>10s</item>
+        <item>15s</item>
+        <item>20s</item>
+        <item>30s</item>
+        <item>60s</item>
+        <item>120s</item>
+    </string-array>
+    <string-array name="seek_increment_value">
+        <item>5000</item>
+        <item>10000</item>
+        <item>15000</item>
+        <item>20000</item>
+        <item>30000</item>
+        <item>60000</item>
+        <item>120000</item>
+    </string-array>
 </resources>

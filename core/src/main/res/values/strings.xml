@@ -142,6 +142,8 @@
     <string name="settings_socket_timeout">Socket timeout (ms)</string>
     <string name="users">Users</string>
     <string name="add_user">Add user</string>
+    <string name="pref_player_forward_increment">Forward Increment</string>
+    <string name="pref_player_backward_increment">Backward Increment</string>
     <string name="pref_player_mpv_hwdec">Hardware decoding</string>
     <string name="pref_player_mpv_vo">Video output</string>
     <string name="pref_player_mpv_ao">Audio output</string>

@@ -79,6 +79,20 @@ constructor(
                 }
             },
             nestedPreferences = listOf(
+                PreferenceSelect(
+                    nameStringResource = R.string.pref_player_forward_increment,
+                    backendName = Constants.PREF_PLAYER_SEEK_FORWARD_INC,
+                    backendDefaultValue = "15s",
+                    options = R.array.seek_increment,
+                    optionValues = R.array.seek_increment_value,
+                ),
+                PreferenceSelect(
+                    nameStringResource = R.string.pref_player_backward_increment,
+                    backendName = Constants.PREF_PLAYER_SEEK_BACK_INC,
+                    backendDefaultValue = "5s",
+                    options = R.array.seek_increment,
+                    optionValues = R.array.seek_increment_value,
+                ),
                 PreferenceSwitch(
                     nameStringResource = R.string.mpv_player,
                     descriptionStringRes = R.string.mpv_player_summary,

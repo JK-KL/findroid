@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,6 +30,10 @@ fun PlayControlHover(
     onPlayClick: (FindroidEpisode) -> Unit,
     onReplayClick: (FindroidEpisode) -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(true) {
+        focusRequester.requestFocus()
+    }
     Box(
         modifier = modifier
             .background(Color.Transparent),
@@ -35,7 +43,7 @@ fun PlayControlHover(
         ) {
             Column {
                 IconButton(
-                    modifier = modifier,
+                    modifier = modifier.focusRequester(focusRequester),
                     onClick = {
                         onPlayClick(item)
                     },

@@ -41,7 +41,7 @@ fun EpisodeCard(
     Row(
         modifier = modifier
             .border(
-                border = if ((index - 1) == currentIndex) {
+                border = if (index == currentIndex) {
                     BorderStroke(
                         4.dp,
                         Color.White,
@@ -52,7 +52,7 @@ fun EpisodeCard(
                         Color.Transparent,
                     )
                 },
-                shape = if ((index - 1) == currentIndex) {
+                shape = if (index == currentIndex) {
                     RoundedCornerShape(10.dp)
                 } else {
                     RoundedCornerShape(
@@ -72,13 +72,15 @@ fun EpisodeCard(
                     direction = Direction.HORIZONTAL,
                     modifier = modifier.clip(RoundedCornerShape(10.dp)),
                 )
-                PlayControlHover(
-                    item = episode,
-                    onPlayClick = { onPlayClick(episode) },
-                    onReplayClick = { onReplayClick(episode) },
-                    modifier = modifier
-                        .align(Alignment.Center),
-                )
+                if (index == currentIndex) {
+                    PlayControlHover(
+                        item = episode,
+                        onPlayClick = { onPlayClick(episode) },
+                        onReplayClick = { onReplayClick(episode) },
+                        modifier = modifier
+                            .align(Alignment.Center),
+                    )
+                }
                 ProgressBadge(
                     item = episode,
                     modifier = modifier
@@ -118,7 +120,7 @@ private fun ItemCardPreviewEpisode() {
             episode = dummyEpisode,
             onPlayClick = {},
             onReplayClick = {},
-            index = 2,
+            index = 1,
             currentIndex = 1,
         )
     }

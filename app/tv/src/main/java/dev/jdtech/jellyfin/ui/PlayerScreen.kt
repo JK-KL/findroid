@@ -164,8 +164,7 @@ fun PlayerScreen(
     }
 
     Box(
-        modifier =
-        Modifier
+        modifier = Modifier
             .keyboardEvents(
                 exoPlayer = viewModel.player,
                 videoPlayerState = videoPlayerState,
@@ -200,8 +199,7 @@ fun PlayerScreen(
                     else -> Unit
                 }
             },
-            modifier =
-            Modifier
+            modifier = Modifier
                 .fillMaxSize(),
         )
         val focusRequester = remember { FocusRequester() }

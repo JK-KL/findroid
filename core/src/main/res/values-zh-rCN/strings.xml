@@ -14,6 +14,15 @@
     <string name="remove_server">删除服务器</string>
     <string name="remove">删除</string>
     <string name="cancel">取消</string>
+    <string name="loading">加载中</string>
+    <string name="sort_name">名称</string>
+    <string name="random">随机</string>
+    <string name="community_rating">公众评分</string>
+    <string name="critic_rating">家长分级</string>
+    <string name="date_created">创建日期</string>
+    <string name="date_played">播放日期</string>
+    <string name="premiere_date">首映日期</string>
+    <string name="series_date_played">剧集播放日期</string>
     <string name="title_media">我的媒体</string>
     <string name="title_favorite">收藏</string>
     <string name="title_settings">设置</string>

@@ -156,7 +156,7 @@ private fun ShowScreenLayout(
     }
 
     when (uiState) {
-        is ShowViewModel.UiState.Loading -> Text(text = "LOADING")
+        is ShowViewModel.UiState.Loading -> Text(text = stringResource(CoreR.string.loading))
         is ShowViewModel.UiState.Normal -> {
             val item = uiState.item
             val seasons = uiState.seasons

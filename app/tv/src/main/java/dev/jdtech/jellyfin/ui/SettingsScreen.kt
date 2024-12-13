@@ -132,7 +132,7 @@ private fun SettingsScreenLayout(
             }
         }
         is SettingsViewModel.UiState.Loading -> {
-            Text(text = "LOADING")
+            Text(text = stringResource(CoreR.string.loading))
         }
     }
 }

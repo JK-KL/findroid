@@ -26,6 +26,15 @@
     <string name="remove_server_address_dialog_text">Are you sure you want to remove the server address %1$s</string>
     <string name="remove">Remove</string>
     <string name="cancel">Cancel</string>
+    <string name="loading">Loading</string>
+    <string name="sort_name">name</string>
+    <string name="random">random</string>
+    <string name="community_rating">Community Rating</string>
+    <string name="critic_rating">Critic Rating</string>
+    <string name="date_created">Date Created</string>
+    <string name="date_played">Date Played</string>
+    <string name="premiere_date">Premiere Date</string>
+    <string name="series_date_played">Series Date Played</string>
     <string name="title_home">Home</string>
     <string name="title_media">My media</string>
     <string name="title_favorite">Favorites</string>

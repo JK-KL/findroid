@@ -150,7 +150,7 @@ private fun MovieScreenLayout(
     }
 
     when (uiState) {
-        is MovieViewModel.UiState.Loading -> Text(text = "LOADING")
+        is MovieViewModel.UiState.Loading -> Text(text = stringResource(CoreR.string.loading))
         is MovieViewModel.UiState.Normal -> {
             val item = uiState.item
             val people = uiState.allPeople

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.jdtech.jellyfin.AppPreferences
 import dev.jdtech.jellyfin.models.CollectionType
 import dev.jdtech.jellyfin.models.FindroidItem
 import dev.jdtech.jellyfin.models.SortBy
@@ -24,6 +25,7 @@ class LibraryViewModel
 @Inject
 constructor(
     private val jellyfinRepository: JellyfinRepository,
+    private val appPreferences: AppPreferences,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -31,9 +33,30 @@ constructor(
     var itemsloaded = false
 
     sealed class UiState {
-        data class Normal(val items: Flow<PagingData<FindroidItem>>) : UiState()
+        data class Normal(
+            val items: Flow<PagingData<FindroidItem>>,
+            val sortBy: SortBy,
+            val sortOrder: SortOrder,
+        ) : UiState()
+
         data object Loading : UiState()
         data class Error(val error: Exception) : UiState()
+    }
+
+    fun getSort(): Pair<SortBy, SortOrder> {
+        return Pair(
+            SortBy.fromString(appPreferences.sortBy),
+            try {
+                SortOrder.valueOf(appPreferences.sortOrder)
+            } catch (_: IllegalArgumentException) {
+                SortOrder.ASCENDING
+            },
+        )
+    }
+
+    fun setSort(sortBy: SortBy, sortOrder: SortOrder) {
+        appPreferences.sortBy = sortBy.sortString
+        appPreferences.sortOrder = sortOrder.toString()
     }
 
     fun loadItems(
@@ -48,12 +71,16 @@ constructor(
             CollectionType.Movies -> listOf(BaseItemKind.MOVIE)
             CollectionType.TvShows -> listOf(BaseItemKind.SERIES)
             CollectionType.BoxSets -> listOf(BaseItemKind.BOX_SET)
-            CollectionType.Mixed -> listOf(BaseItemKind.FOLDER, BaseItemKind.MOVIE, BaseItemKind.SERIES)
+            CollectionType.Mixed -> listOf(
+                BaseItemKind.FOLDER,
+                BaseItemKind.MOVIE,
+                BaseItemKind.SERIES,
+            )
+
             else -> null
         }
 
         val recursive = itemType == null || !itemType.contains(BaseItemKind.FOLDER)
-
         viewModelScope.launch {
             _uiState.emit(UiState.Loading)
             try {
@@ -61,10 +88,15 @@ constructor(
                     parentId = parentId,
                     includeTypes = itemType,
                     recursive = recursive,
-                    sortBy = if (libraryType == CollectionType.TvShows && sortBy == SortBy.DATE_PLAYED) SortBy.SERIES_DATE_PLAYED else sortBy, // Jellyfin uses a different enum for sorting series by data played
+                    // Jellyfin uses a different enum for sorting series by data played
+                    sortBy = if (libraryType == CollectionType.TvShows && sortBy == SortBy.DATE_PLAYED) {
+                        SortBy.SERIES_DATE_PLAYED
+                    } else {
+                        sortBy
+                    },
                     sortOrder = sortOrder,
                 ).cachedIn(viewModelScope)
-                _uiState.emit(UiState.Normal(items))
+                _uiState.emit(UiState.Normal(items, sortBy, sortOrder))
             } catch (e: Exception) {
                 _uiState.emit(UiState.Error(e))
             }

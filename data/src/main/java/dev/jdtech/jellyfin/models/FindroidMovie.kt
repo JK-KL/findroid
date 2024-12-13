@@ -25,6 +25,7 @@ data class FindroidMovie(
     val genres: List<String>,
     val communityRating: Float?,
     val officialRating: String?,
+    val criticRating: Float?,
     val status: String,
     val productionYear: Int?,
     val endDate: LocalDateTime?,
@@ -33,7 +34,8 @@ data class FindroidMovie(
     override val images: FindroidImages,
     override val chapters: List<FindroidChapter>?,
     override val trickplayInfo: Map<String, FindroidTrickplayInfo>?,
-) : FindroidItem, FindroidSources
+) : FindroidItem,
+    FindroidSources
 
 suspend fun BaseItemDto.toFindroidMovie(
     jellyfinRepository: JellyfinRepository,
@@ -61,6 +63,7 @@ suspend fun BaseItemDto.toFindroidMovie(
         genres = genres ?: emptyList(),
         people = people ?: emptyList(),
         officialRating = officialRating,
+        criticRating = criticRating,
         status = status ?: "Ended",
         productionYear = productionYear,
         endDate = endDate,
@@ -71,7 +74,10 @@ suspend fun BaseItemDto.toFindroidMovie(
     )
 }
 
-fun FindroidMovieDto.toFindroidMovie(database: ServerDatabaseDao, userId: UUID): FindroidMovie {
+fun FindroidMovieDto.toFindroidMovie(
+    database: ServerDatabaseDao,
+    userId: UUID,
+): FindroidMovie {
     val userData = database.getUserDataOrCreateNew(id, userId)
     val sources = database.getSources(id).map { it.toFindroidSource(database) }
     val trickplayInfos = mutableMapOf<String, FindroidTrickplayInfo>()
@@ -94,6 +100,7 @@ fun FindroidMovieDto.toFindroidMovie(database: ServerDatabaseDao, userId: UUID):
         people = emptyList(),
         communityRating = communityRating,
         officialRating = officialRating,
+        criticRating = criticRating,
         status = status,
         productionYear = productionYear,
         endDate = endDate,

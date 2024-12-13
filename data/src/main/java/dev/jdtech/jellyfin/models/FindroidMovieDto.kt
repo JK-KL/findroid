@@ -17,14 +17,15 @@ data class FindroidMovieDto(
     val premiereDate: LocalDateTime?,
     val communityRating: Float?,
     val officialRating: String?,
+    val criticRating: Float?,
     val status: String,
     val productionYear: Int?,
     val endDate: LocalDateTime?,
     val chapters: List<FindroidChapter>?,
 )
 
-fun FindroidMovie.toFindroidMovieDto(serverId: String? = null): FindroidMovieDto {
-    return FindroidMovieDto(
+fun FindroidMovie.toFindroidMovieDto(serverId: String? = null): FindroidMovieDto =
+    FindroidMovieDto(
         id = id,
         serverId = serverId,
         name = name,
@@ -38,5 +39,5 @@ fun FindroidMovie.toFindroidMovieDto(serverId: String? = null): FindroidMovieDto
         productionYear = productionYear,
         endDate = endDate,
         chapters = chapters,
+        criticRating = criticRating,
     )
-}

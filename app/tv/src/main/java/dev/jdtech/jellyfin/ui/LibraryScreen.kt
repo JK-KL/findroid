@@ -1,39 +1,42 @@
 package dev.jdtech.jellyfin.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.tv.material3.Border
-import androidx.tv.material3.ClickableSurfaceDefaults
+import androidx.tv.material3.Button
+import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.FilterSelectorDialogDestination
 import com.ramcosta.composedestinations.generated.destinations.LibraryScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.MovieScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ShowScreenDestination
@@ -50,6 +53,8 @@ import dev.jdtech.jellyfin.models.FindroidShow
 import dev.jdtech.jellyfin.models.SortBy
 import dev.jdtech.jellyfin.ui.components.Direction
 import dev.jdtech.jellyfin.ui.components.ItemCard
+import dev.jdtech.jellyfin.ui.dialogs.FilterItem
+import dev.jdtech.jellyfin.ui.dialogs.FilterSelectorDialogResult
 import dev.jdtech.jellyfin.ui.dialogs.SortItem
 import dev.jdtech.jellyfin.ui.dialogs.SortSelectorDialogResult
 import dev.jdtech.jellyfin.ui.dummy.dummyMovies
@@ -70,20 +75,46 @@ fun LibraryScreen(
     libraryName: String,
     libraryType: CollectionType,
     libraryViewModel: LibraryViewModel = hiltViewModel(),
-    resultRecipient: ResultRecipient<SortSelectorDialogDestination, SortSelectorDialogResult>,
+    sortResultRecipient: ResultRecipient<SortSelectorDialogDestination, SortSelectorDialogResult>,
+    filterResultRecipient: ResultRecipient<FilterSelectorDialogDestination, FilterSelectorDialogResult>,
 ) {
     LaunchedEffect(true) {
         val sort = libraryViewModel.getSort()
-        libraryViewModel.loadItems(libraryId, libraryType, sort.first, sort.second)
+        val playedFilter = libraryViewModel.getPlayedFilter()
+        libraryViewModel.loadItems(libraryId, libraryType, sort.first, sort.second, playedFilter)
     }
-    resultRecipient.onNavResult { result ->
+    sortResultRecipient.onNavResult { result ->
         when (result) {
             is NavResult.Canceled -> Unit
             is NavResult.Value -> {
                 val sortBy = result.value.sortBy
                 val sortOrder = result.value.sortOrder
                 libraryViewModel.setSort(sortBy, sortOrder)
-                libraryViewModel.loadItems(libraryId, libraryType, sortBy, sortOrder)
+                libraryViewModel.loadItems(
+                    libraryId,
+                    libraryType,
+                    sortBy,
+                    sortOrder,
+                    libraryViewModel.getPlayedFilter(),
+                )
+            }
+        }
+    }
+    filterResultRecipient.onNavResult { result ->
+        when (result) {
+            is NavResult.Canceled -> Unit
+            is NavResult.Value -> {
+                val sort = libraryViewModel.getSort()
+                val filters = result.value.id
+                val noPlayedFilter = filters.count { a -> a == 0 } > 0
+                libraryViewModel.setPlayedFilter(noPlayedFilter)
+                libraryViewModel.loadItems(
+                    libraryId,
+                    libraryType,
+                    sort.first,
+                    sort.second,
+                    noPlayedFilter,
+                )
             }
         }
     }
@@ -174,6 +205,13 @@ private fun LibraryScreenLayout(
                     sortBy = SortBy.SERIES_DATE_PLAYED,
                 ),
             )
+            val filterItem = arrayOf(
+                FilterItem(
+                    id = 0,
+                    label = stringResource(CoreR.string.played_filter),
+                    selected = uiState.isFilterPlayed,
+                ),
+            )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(5),
                 horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.default),
@@ -182,8 +220,7 @@ private fun LibraryScreenLayout(
                     horizontal = MaterialTheme.spacings.default * 2,
                     vertical = MaterialTheme.spacings.large,
                 ),
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 item(span = { GridItemSpan(this.maxLineSpan) }) {
                     Row(
@@ -198,39 +235,63 @@ private fun LibraryScreenLayout(
                         }
                         Column(
                             horizontalAlignment = Alignment.End,
-                            modifier = Modifier
-                                .fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Surface(
-                                modifier = Modifier.focusRequester(focusRequester),
-                                onClick = {
-                                    navigator.navigate(
-                                        SortSelectorDialogDestination(
-                                            uiState.sortOrder,
-                                            sortItem,
-                                        ),
-                                    )
-                                },
-                                border = ClickableSurfaceDefaults.border(
-                                    focusedBorder = Border(
-                                        BorderStroke(
-                                            1.dp,
-                                            Color.White,
-                                        ),
-                                    ),
-                                ),
-                                colors = ClickableSurfaceDefaults.colors(
-                                    containerColor = Color.Transparent,
-                                    focusedContainerColor = Color.Transparent,
-                                ),
-                                shape = ClickableSurfaceDefaults.shape(
-                                    focusedShape = RoundedCornerShape(2.dp),
-                                ),
-                            ) {
-                                Text(
-                                    text = stringResource(CoreR.string.sort_by),
-                                    style = MaterialTheme.typography.headlineMedium,
-                                )
+                            Row {
+                                Column {
+                                    var filterFocus by remember { mutableStateOf(false) }
+                                    Button(
+                                        onClick = {
+                                            navigator.navigate(
+                                                FilterSelectorDialogDestination(
+                                                    filterItem,
+                                                ),
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .focusRequester(focusRequester)
+                                            .onFocusChanged { state ->
+                                                filterFocus = state.isFocused
+                                            },
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = CoreR.drawable.ic_filter),
+                                            contentDescription = null,
+                                        )
+                                        if (filterFocus) {
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(text = stringResource(id = CoreR.string.filter_by))
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(MaterialTheme.spacings.medium))
+                                Column {
+                                    var sortFocus by remember { mutableStateOf(false) }
+                                    Button(
+                                        onClick = {
+                                            navigator.navigate(
+                                                SortSelectorDialogDestination(
+                                                    uiState.sortOrder,
+                                                    sortItem,
+                                                ),
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .focusRequester(focusRequester)
+                                            .onFocusChanged { state ->
+                                                sortFocus = state.isFocused
+                                            },
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = CoreR.drawable.ic_sort),
+                                            contentDescription = null,
+                                        )
+                                        if (sortFocus) {
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(text = stringResource(id = CoreR.string.sort_by))
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

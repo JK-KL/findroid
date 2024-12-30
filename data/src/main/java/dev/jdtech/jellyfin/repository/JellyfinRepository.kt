@@ -42,6 +42,7 @@ interface JellyfinRepository {
         sortOrder: SortOrder = SortOrder.ASCENDING,
         startIndex: Int? = null,
         limit: Int? = null,
+        isPlayed: Boolean? = null,
     ): List<FindroidItem>
 
     suspend fun getItemsPaging(
@@ -50,6 +51,7 @@ interface JellyfinRepository {
         recursive: Boolean = false,
         sortBy: SortBy = SortBy.defaultValue,
         sortOrder: SortOrder = SortOrder.ASCENDING,
+        isPlayed: Boolean? = null,
     ): Flow<PagingData<FindroidItem>>
 
     suspend fun getPersonItems(

@@ -28,6 +28,7 @@
     <string name="cancel">Cancel</string>
     <string name="loading">Loading</string>
     <string name="sort_name">name</string>
+    <string name="played_filter">Not Played</string>
     <string name="random">random</string>
     <string name="community_rating">Community Rating</string>
     <string name="critic_rating">Critic Rating</string>
@@ -103,6 +104,7 @@
     <string name="episodes_label">Episodes</string>
     <string name="hide">Hide</string>
     <string name="sort_by">Sort by</string>
+    <string name="filter_by">Filter by</string>
     <string name="sort_order">Sort order</string>
     <string name="close">Close</string>
     <string name="share">Share</string>

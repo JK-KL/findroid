@@ -75,7 +75,9 @@
     <string name="shows_label">节目</string>
     <string name="hide">隐藏</string>
     <string name="sort_by">排序</string>
+    <string name="filter_by">过滤</string>
     <string name="sort_order">排序顺序</string>
+    <string name="played_filter">未播放</string>
     <string name="close">关闭</string>
     <string name="share">分享</string>
     <string name="image_description_poster">%1$s 海报</string>

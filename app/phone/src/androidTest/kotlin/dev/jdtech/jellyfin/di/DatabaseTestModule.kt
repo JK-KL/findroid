@@ -16,7 +16,9 @@ import javax.inject.Singleton
 object DatabaseTestModule {
     @Singleton
     @Provides
-    fun provideServerDatabaseDao(@ApplicationContext app: Context): ServerDatabaseDao {
+    fun provideServerDatabaseDao(
+        @ApplicationContext app: Context,
+    ): ServerDatabaseDao {
         return Room.inMemoryDatabaseBuilder(
             app.applicationContext,
             ServerDatabase::class.java,

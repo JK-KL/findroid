@@ -90,22 +90,22 @@ fun FilterSelectorDialog(
                         enabled = true,
                         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(4.dp)),
                         colors =
-                            ClickableSurfaceDefaults.colors(
-                                containerColor = Color.Transparent,
-                                focusedContainerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent,
-                            ),
+                        ClickableSurfaceDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                        ),
                         border =
-                            ClickableSurfaceDefaults.border(
-                                focusedBorder =
-                                    Border(
-                                        BorderStroke(
-                                            4.dp,
-                                            Color.White,
-                                        ),
-                                        shape = RoundedCornerShape(10.dp),
-                                    ),
+                        ClickableSurfaceDefaults.border(
+                            focusedBorder =
+                            Border(
+                                BorderStroke(
+                                    4.dp,
+                                    Color.White,
+                                ),
+                                shape = RoundedCornerShape(10.dp),
                             ),
+                        ),
                         scale = ClickableSurfaceScale.None,
                         modifier = Modifier.handleBackKeyEvents(
                             onBack = {
@@ -147,18 +147,18 @@ private fun FilterSelectorDialogPreview() {
     FindroidTheme {
         FilterSelectorDialog(
             sorts =
-                arrayOf(
-                    FilterItem(
-                        id = 0,
-                        label = "name",
-                        selected = true,
-                    ),
-                    FilterItem(
-                        id = 1,
-                        label = "date",
-                        selected = false,
-                    ),
+            arrayOf(
+                FilterItem(
+                    id = 0,
+                    label = "name",
+                    selected = true,
                 ),
+                FilterItem(
+                    id = 1,
+                    label = "date",
+                    selected = false,
+                ),
+            ),
             resultNavigator = EmptyResultBackNavigator(),
         )
     }

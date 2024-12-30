@@ -161,32 +161,32 @@ private fun MovieScreenLayout(
             }
             Box(
                 modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .onGloballyPositioned { coordinates ->
-                            size = coordinates.size.toSize()
-                        },
+                Modifier
+                    .fillMaxSize()
+                    .onGloballyPositioned { coordinates ->
+                        size = coordinates.size.toSize()
+                    },
             ) {
                 AsyncImage(
                     model = item.images.backdrop,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier =
-                        Modifier
-                            .fillMaxSize(),
+                    Modifier
+                        .fillMaxSize(),
                 )
                 if (size != Size.Zero) {
                     Box(
                         modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.radialGradient(
-                                        listOf(Color.Black.copy(alpha = .2f), Color.Black),
-                                        center = Offset(size.width, 0f),
-                                        radius = size.width * .8f,
-                                    ),
+                        Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.radialGradient(
+                                    listOf(Color.Black.copy(alpha = .2f), Color.Black),
+                                    center = Offset(size.width, 0f),
+                                    radius = size.width * .8f,
                                 ),
+                            ),
                     )
                 }
                 LazyColumn(
@@ -198,27 +198,27 @@ private fun MovieScreenLayout(
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.medium),
                     userScrollEnabled = false,
                     modifier =
-                        Modifier.onPreviewKeyEvent { keyEvent ->
-                            when (keyEvent.key.nativeKeyCode) {
-                                KeyEvent.KEYCODE_DPAD_DOWN -> {
-                                    currentIndex = (++currentIndex).coerceIn(0, listSize.intValue - 1)
-                                }
-
-                                KeyEvent.KEYCODE_DPAD_UP -> {
-                                    currentIndex = (--currentIndex).coerceIn(0, listSize.intValue - 1)
-                                }
+                    Modifier.onPreviewKeyEvent { keyEvent ->
+                        when (keyEvent.key.nativeKeyCode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                currentIndex = (++currentIndex).coerceIn(0, listSize.intValue - 1)
                             }
-                            false
-                        },
+
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                currentIndex = (--currentIndex).coerceIn(0, listSize.intValue - 1)
+                            }
+                        }
+                        false
+                    },
                 ) {
                     item {
                         Column(
                             modifier =
-                                Modifier
-                                    .padding(
-                                        start = MaterialTheme.spacings.default * 2,
-                                        end = MaterialTheme.spacings.default * 2,
-                                    ),
+                            Modifier
+                                .padding(
+                                    start = MaterialTheme.spacings.default * 2,
+                                    end = MaterialTheme.spacings.default * 2,
+                                ),
                         ) {
                             Text(
                                 text = item.name,
@@ -332,9 +332,9 @@ private fun MovieScreenLayout(
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text =
-                                            stringResource(
-                                                id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played,
-                                            ),
+                                        stringResource(
+                                            id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played,
+                                        ),
                                     )
                                 }
                                 Button(
@@ -344,18 +344,18 @@ private fun MovieScreenLayout(
                                 ) {
                                     Icon(
                                         painter =
-                                            painterResource(
-                                                id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart,
-                                            ),
+                                        painterResource(
+                                            id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart,
+                                        ),
                                         contentDescription = null,
                                         tint = if (item.favorite) Color.Red else LocalContentColor.current,
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text =
-                                            stringResource(
-                                                id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites,
-                                            ),
+                                        stringResource(
+                                            id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites,
+                                        ),
                                     )
                                 }
                             }
@@ -434,33 +434,33 @@ private fun MovieScreenLayoutPreview() {
     FindroidTheme {
         MovieScreenLayout(
             uiState =
-                MovieViewModel.UiState.Normal(
-                    item = dummyMovie,
-                    actors = emptyList(),
-                    director =
-                        BaseItemPerson(
-                            id = UUID.randomUUID(),
-                            name = "Robert Rodriguez",
-                            type = PersonKind.DIRECTOR,
-                        ),
-                    writers = emptyList(),
-                    videoMetadata =
-                        VideoMetadata(
-                            resolution = listOf(Resolution.UHD),
-                            displayProfiles = listOf(DisplayProfile.HDR10),
-                            audioChannels = listOf(AudioChannel.CH_5_1),
-                            audioCodecs = listOf(AudioCodec.EAC3),
-                            isAtmos = listOf(false),
-                        ),
-                    writersString = "James Cameron, Laeta Kalogridis, Yukito Kishiro",
-                    genresString = "Action, Science Fiction, Adventure",
-                    videoString = "",
-                    audioString = "",
-                    subtitleString = "",
-                    runTime = "121 min",
-                    dateString = "2019",
-                    allPeople = emptyList(),
+            MovieViewModel.UiState.Normal(
+                item = dummyMovie,
+                actors = emptyList(),
+                director =
+                BaseItemPerson(
+                    id = UUID.randomUUID(),
+                    name = "Robert Rodriguez",
+                    type = PersonKind.DIRECTOR,
                 ),
+                writers = emptyList(),
+                videoMetadata =
+                VideoMetadata(
+                    resolution = listOf(Resolution.UHD),
+                    displayProfiles = listOf(DisplayProfile.HDR10),
+                    audioChannels = listOf(AudioChannel.CH_5_1),
+                    audioCodecs = listOf(AudioCodec.EAC3),
+                    isAtmos = listOf(false),
+                ),
+                writersString = "James Cameron, Laeta Kalogridis, Yukito Kishiro",
+                genresString = "Action, Science Fiction, Adventure",
+                videoString = "",
+                audioString = "",
+                subtitleString = "",
+                runTime = "121 min",
+                dateString = "2019",
+                allPeople = emptyList(),
+            ),
             onPlayClick = {},
             onTrailerClick = {},
             onPlayedClick = {},

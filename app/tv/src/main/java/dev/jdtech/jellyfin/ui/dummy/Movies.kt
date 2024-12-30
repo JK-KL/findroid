@@ -19,32 +19,32 @@ val dummyMovie =
             " a compassionate doctor who realizes that somewhere in this abandoned cyborg shell " +
             "is the heart and soul of a young woman with an extraordinary past.",
         sources =
-            listOf(
-                FindroidSource(
-                    id = "",
-                    name = "",
-                    type = FindroidSourceType.REMOTE,
-                    path = "",
-                    size = 0L,
-                    mediaStreams =
-                        listOf(
-                            FindroidMediaStream(
-                                title = "",
-                                displayTitle = "",
-                                language = "en",
-                                type = MediaStreamType.VIDEO,
-                                codec = "hevc",
-                                isExternal = false,
-                                path = "",
-                                channelLayout = null,
-                                videoRangeType = null,
-                                height = 1080,
-                                width = 1920,
-                                videoDoViTitle = null,
-                            ),
-                        ),
+        listOf(
+            FindroidSource(
+                id = "",
+                name = "",
+                type = FindroidSourceType.REMOTE,
+                path = "",
+                size = 0L,
+                mediaStreams =
+                listOf(
+                    FindroidMediaStream(
+                        title = "",
+                        displayTitle = "",
+                        language = "en",
+                        type = MediaStreamType.VIDEO,
+                        codec = "hevc",
+                        isExternal = false,
+                        path = "",
+                        channelLayout = null,
+                        videoRangeType = null,
+                        height = 1080,
+                        width = 1920,
+                        videoDoViTitle = null,
+                    ),
                 ),
             ),
+        ),
         played = false,
         favorite = true,
         canPlay = true,

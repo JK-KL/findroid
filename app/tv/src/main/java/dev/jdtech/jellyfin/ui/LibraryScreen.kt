@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -257,6 +258,7 @@ private fun LibraryScreenLayout(
                                         Icon(
                                             painter = painterResource(id = CoreR.drawable.ic_filter),
                                             contentDescription = null,
+                                            modifier = Modifier.height(24.dp),
                                         )
                                         if (filterFocus) {
                                             Spacer(modifier = Modifier.width(6.dp))
@@ -283,8 +285,9 @@ private fun LibraryScreenLayout(
                                             },
                                     ) {
                                         Icon(
-                                            painter = painterResource(id = CoreR.drawable.ic_sort),
+                                            painter = painterResource(id = CoreR.drawable.ic_sort_ex),
                                             contentDescription = null,
+                                            modifier = Modifier.height(24.dp),
                                         )
                                         if (sortFocus) {
                                             Spacer(modifier = Modifier.width(6.dp))

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.view.KeyEvent
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -97,6 +98,7 @@ fun MovieScreen(
             is PlayerItemsEvent.PlayerItemsReady -> {
                 navigator.navigate(PlayerActivityDestination(items = ArrayList(event.items)))
             }
+
             is PlayerItemsEvent.PlayerItemsError -> Unit
         }
     }
@@ -150,7 +152,7 @@ private fun MovieScreenLayout(
     }
 
     when (uiState) {
-        is MovieViewModel.UiState.Loading -> Text(text = "LOADING")
+        is MovieViewModel.UiState.Loading -> Text(text = stringResource(CoreR.string.loading))
         is MovieViewModel.UiState.Normal -> {
             val item = uiState.item
             val people = uiState.allPeople
@@ -158,53 +160,65 @@ private fun MovieScreenLayout(
                 mutableStateOf(Size.Zero)
             }
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .onGloballyPositioned { coordinates ->
-                        size = coordinates.size.toSize()
-                    },
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .onGloballyPositioned { coordinates ->
+                            size = coordinates.size.toSize()
+                        },
             ) {
                 AsyncImage(
                     model = item.images.backdrop,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier =
+                        Modifier
+                            .fillMaxSize(),
                 )
                 if (size != Size.Zero) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.radialGradient(
-                                    listOf(Color.Black.copy(alpha = .2f), Color.Black),
-                                    center = Offset(size.width, 0f),
-                                    radius = size.width * .8f,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.radialGradient(
+                                        listOf(Color.Black.copy(alpha = .2f), Color.Black),
+                                        center = Offset(size.width, 0f),
+                                        radius = size.width * .8f,
+                                    ),
                                 ),
-                            ),
                     )
                 }
                 LazyColumn(
                     state = listState,
-                    contentPadding = PaddingValues(top = 112.dp, bottom = MaterialTheme.spacings.large),
+                    contentPadding = PaddingValues(
+                        top = 112.dp,
+                        bottom = MaterialTheme.spacings.large,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.medium),
                     userScrollEnabled = false,
-                    modifier = Modifier.onPreviewKeyEvent { keyEvent ->
-                        when (keyEvent.key.nativeKeyCode) {
-                            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                                currentIndex = (++currentIndex).coerceIn(0, listSize.intValue - 1)
+                    modifier =
+                        Modifier.onPreviewKeyEvent { keyEvent ->
+                            when (keyEvent.key.nativeKeyCode) {
+                                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                    currentIndex = (++currentIndex).coerceIn(0, listSize.intValue - 1)
+                                }
+
+                                KeyEvent.KEYCODE_DPAD_UP -> {
+                                    currentIndex = (--currentIndex).coerceIn(0, listSize.intValue - 1)
+                                }
                             }
-                            KeyEvent.KEYCODE_DPAD_UP -> {
-                                currentIndex = (--currentIndex).coerceIn(0, listSize.intValue - 1)
-                            }
-                        }
-                        false
-                    },
+                            false
+                        },
                 ) {
                     item {
                         Column(
-                            modifier = Modifier
-                                .padding(start = MaterialTheme.spacings.default * 2, end = MaterialTheme.spacings.default * 2),
+                            modifier =
+                                Modifier
+                                    .padding(
+                                        start = MaterialTheme.spacings.default * 2,
+                                        end = MaterialTheme.spacings.default * 2,
+                                    ),
                         ) {
                             Text(
                                 text = item.name,
@@ -242,6 +256,20 @@ private fun MovieScreenLayout(
                                             painter = painterResource(id = CoreR.drawable.ic_star),
                                             contentDescription = null,
                                             tint = Yellow,
+                                            modifier = Modifier.size(16.dp),
+                                        )
+                                        Spacer(modifier = Modifier.width(MaterialTheme.spacings.extraSmall))
+                                        Text(
+                                            text = String.format(locale, "%.1f", it),
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
+                                    }
+                                }
+                                item.criticRating?.let {
+                                    Row {
+                                        Image(
+                                            painter = painterResource(id = CoreR.drawable.ic_tomato),
+                                            contentDescription = null,
                                             modifier = Modifier.size(16.dp),
                                         )
                                         Spacer(modifier = Modifier.width(MaterialTheme.spacings.extraSmall))
@@ -303,9 +331,10 @@ private fun MovieScreenLayout(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = stringResource(
-                                            id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played,
-                                        ),
+                                        text =
+                                            stringResource(
+                                                id = if (item.played) CoreR.string.unmark_as_played else CoreR.string.mark_as_played,
+                                            ),
                                     )
                                 }
                                 Button(
@@ -314,17 +343,19 @@ private fun MovieScreenLayout(
                                     },
                                 ) {
                                     Icon(
-                                        painter = painterResource(
-                                            id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart,
-                                        ),
+                                        painter =
+                                            painterResource(
+                                                id = if (item.favorite) CoreR.drawable.ic_heart_filled else CoreR.drawable.ic_heart,
+                                            ),
                                         contentDescription = null,
                                         tint = if (item.favorite) Color.Red else LocalContentColor.current,
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = stringResource(
-                                            id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites,
-                                        ),
+                                        text =
+                                            stringResource(
+                                                id = if (item.favorite) CoreR.string.remove_from_favorites else CoreR.string.add_to_favorites,
+                                            ),
                                     )
                                 }
                             }
@@ -402,31 +433,34 @@ private fun MovieScreenLayout(
 private fun MovieScreenLayoutPreview() {
     FindroidTheme {
         MovieScreenLayout(
-            uiState = MovieViewModel.UiState.Normal(
-                item = dummyMovie,
-                actors = emptyList(),
-                director = BaseItemPerson(
-                    id = UUID.randomUUID(),
-                    name = "Robert Rodriguez",
-                    type = PersonKind.DIRECTOR,
+            uiState =
+                MovieViewModel.UiState.Normal(
+                    item = dummyMovie,
+                    actors = emptyList(),
+                    director =
+                        BaseItemPerson(
+                            id = UUID.randomUUID(),
+                            name = "Robert Rodriguez",
+                            type = PersonKind.DIRECTOR,
+                        ),
+                    writers = emptyList(),
+                    videoMetadata =
+                        VideoMetadata(
+                            resolution = listOf(Resolution.UHD),
+                            displayProfiles = listOf(DisplayProfile.HDR10),
+                            audioChannels = listOf(AudioChannel.CH_5_1),
+                            audioCodecs = listOf(AudioCodec.EAC3),
+                            isAtmos = listOf(false),
+                        ),
+                    writersString = "James Cameron, Laeta Kalogridis, Yukito Kishiro",
+                    genresString = "Action, Science Fiction, Adventure",
+                    videoString = "",
+                    audioString = "",
+                    subtitleString = "",
+                    runTime = "121 min",
+                    dateString = "2019",
+                    allPeople = emptyList(),
                 ),
-                writers = emptyList(),
-                videoMetadata = VideoMetadata(
-                    resolution = listOf(Resolution.UHD),
-                    displayProfiles = listOf(DisplayProfile.HDR10),
-                    audioChannels = listOf(AudioChannel.CH_5_1),
-                    audioCodecs = listOf(AudioCodec.EAC3),
-                    isAtmos = listOf(false),
-                ),
-                writersString = "James Cameron, Laeta Kalogridis, Yukito Kishiro",
-                genresString = "Action, Science Fiction, Adventure",
-                videoString = "",
-                audioString = "",
-                subtitleString = "",
-                runTime = "121 min",
-                dateString = "2019",
-                allPeople = emptyList(),
-            ),
             onPlayClick = {},
             onTrailerClick = {},
             onPlayedClick = {},

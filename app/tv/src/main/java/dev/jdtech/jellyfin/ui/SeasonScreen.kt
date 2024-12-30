@@ -23,6 +23,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.MaterialTheme
@@ -42,6 +43,7 @@ import dev.jdtech.jellyfin.viewmodels.PlayerItemsEvent
 import dev.jdtech.jellyfin.viewmodels.PlayerViewModel
 import dev.jdtech.jellyfin.viewmodels.SeasonViewModel
 import java.util.UUID
+import dev.jdtech.jellyfin.core.R as CoreR
 
 @Destination<RootGraph>
 @Composable
@@ -98,7 +100,7 @@ private fun SeasonScreenLayout(
     val focusRequester = remember { FocusRequester() }
 
     when (uiState) {
-        is SeasonViewModel.UiState.Loading -> Text(text = "LOADING")
+        is SeasonViewModel.UiState.Loading -> Text(text = stringResource(CoreR.string.loading))
         is SeasonViewModel.UiState.Normal -> {
             val episodes = uiState.episodes
             Row(

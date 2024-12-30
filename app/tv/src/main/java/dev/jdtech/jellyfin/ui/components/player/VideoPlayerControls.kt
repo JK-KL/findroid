@@ -16,11 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Text
 import dev.jdtech.jellyfin.ui.theme.FindroidTheme
 import dev.jdtech.jellyfin.ui.theme.spacings
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun VideoPlayerControlsLayout(
@@ -31,14 +28,6 @@ fun VideoPlayerControlsLayout(
     Column(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.Top,
-        ) {
-            val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
-            Text(time)
-        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

@@ -149,14 +149,14 @@ private fun ShowScreenLayout(
 
     val listState = rememberLazyListState()
     val listSize = remember { mutableIntStateOf(4) }
-    var currentIndex by remember { mutableIntStateOf(1) }
+    var currentIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(currentIndex) {
         listState.animateScrollToItem(currentIndex)
     }
 
     when (uiState) {
-        is ShowViewModel.UiState.Loading -> Text(text = "LOADING")
+        is ShowViewModel.UiState.Loading -> Text(text = stringResource(CoreR.string.loading))
         is ShowViewModel.UiState.Normal -> {
             val item = uiState.item
             val seasons = uiState.seasons
@@ -204,14 +204,14 @@ private fun ShowScreenLayout(
                             KeyEvent.KEYCODE_DPAD_DOWN -> {
                                 if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                                     currentIndex =
-                                        (++currentIndex).coerceIn(1, listSize.intValue - 1)
+                                        (++currentIndex).coerceIn(0, listSize.intValue - 1)
                                 }
                             }
 
                             KeyEvent.KEYCODE_DPAD_UP -> {
                                 if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                                     currentIndex =
-                                        (--currentIndex).coerceIn(1, listSize.intValue - 1)
+                                        (--currentIndex).coerceIn(0, listSize.intValue - 1)
                                 }
                             }
                         }

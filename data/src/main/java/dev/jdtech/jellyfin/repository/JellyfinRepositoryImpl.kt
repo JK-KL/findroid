@@ -115,6 +115,7 @@ class JellyfinRepositoryImpl(
         sortOrder: SortOrder,
         startIndex: Int?,
         limit: Int?,
+        isPlayed: Boolean?,
     ): List<FindroidItem> =
         withContext(Dispatchers.IO) {
             jellyfinApi.itemsApi.getItems(
@@ -126,6 +127,7 @@ class JellyfinRepositoryImpl(
                 sortOrder = listOf(sortOrder),
                 startIndex = startIndex,
                 limit = limit,
+                isPlayed = isPlayed,
             ).content.items
                 .mapNotNull { it.toFindroidItem(this@JellyfinRepositoryImpl, database) }
         }
@@ -136,6 +138,7 @@ class JellyfinRepositoryImpl(
         recursive: Boolean,
         sortBy: SortBy,
         sortOrder: SortOrder,
+        isPlayed: Boolean?,
     ): Flow<PagingData<FindroidItem>> {
         return Pager(
             config = PagingConfig(
@@ -150,6 +153,7 @@ class JellyfinRepositoryImpl(
                     recursive,
                     sortBy,
                     sortOrder,
+                    isPlayed = isPlayed,
                 )
             },
         ).flow
@@ -233,7 +237,8 @@ class JellyfinRepositoryImpl(
                 jellyfinApi.showsApi.getSeasons(seriesId, jellyfinApi.userId!!).content.items
                     .map { it.toFindroidSeason(this@JellyfinRepositoryImpl) }
             } else {
-                database.getSeasonsByShowId(seriesId).map { it.toFindroidSeason(database, jellyfinApi.userId!!) }
+                database.getSeasonsByShowId(seriesId)
+                    .map { it.toFindroidSeason(database, jellyfinApi.userId!!) }
             }
         }
 
@@ -268,7 +273,8 @@ class JellyfinRepositoryImpl(
                 ).content.items
                     .mapNotNull { it.toFindroidEpisode(this@JellyfinRepositoryImpl, database) }
             } else {
-                database.getEpisodesBySeasonId(seasonId).map { it.toFindroidEpisode(database, jellyfinApi.userId!!) }
+                database.getEpisodesBySeasonId(seasonId)
+                    .map { it.toFindroidEpisode(database, jellyfinApi.userId!!) }
             }
         }
 
@@ -363,9 +369,14 @@ class JellyfinRepositoryImpl(
                     if (sources != null) {
                         return@withContext File(sources.first(), index.toString()).readBytes()
                     }
-                } catch (_: Exception) { }
+                } catch (_: Exception) {
+                }
 
-                return@withContext jellyfinApi.trickplayApi.getTrickplayTileImage(itemId, width, index).content.toByteArray()
+                return@withContext jellyfinApi.trickplayApi.getTrickplayTileImage(
+                    itemId,
+                    width,
+                    index,
+                ).content.toByteArray()
             } catch (_: Exception) {
                 return@withContext null
             }
@@ -415,10 +426,12 @@ class JellyfinRepositoryImpl(
                     database.setPlaybackPositionTicks(itemId, jellyfinApi.userId!!, 0)
                     database.setPlayed(jellyfinApi.userId!!, itemId, false)
                 }
+
                 playedPercentage > 90 -> {
                     database.setPlaybackPositionTicks(itemId, jellyfinApi.userId!!, 0)
                     database.setPlayed(jellyfinApi.userId!!, itemId, true)
                 }
+
                 else -> {
                     database.setPlaybackPositionTicks(itemId, jellyfinApi.userId!!, positionTicks)
                     database.setPlayed(jellyfinApi.userId!!, itemId, false)

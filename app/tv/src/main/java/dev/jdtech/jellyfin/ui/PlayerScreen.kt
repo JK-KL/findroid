@@ -4,8 +4,10 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +37,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Text
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.VideoPlayerTrackSelectorDialogDestination
@@ -58,6 +61,8 @@ import dev.jdtech.jellyfin.utils.handleDPadKeyEvents
 import dev.jdtech.jellyfin.utils.handleMenuKeyEvents
 import dev.jdtech.jellyfin.viewmodels.PlayerActivityViewModel
 import kotlinx.coroutines.delay
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -204,24 +209,43 @@ fun PlayerScreen(
         )
         val focusRequester = remember { FocusRequester() }
 
-        VideoPlayerOverlay(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            focusRequester = focusRequester,
-            state = videoPlayerState,
-            isPlaying = isPlaying,
-            controls = {
-                VideoPlayerControls(
-                    title = uiState.currentItemTitle,
-                    isPlaying = isPlaying,
-                    contentCurrentPosition = currentPosition,
-                    player = viewModel.player,
-                    state = videoPlayerState,
-                    focusRequester = focusRequester,
-                    navigator = navigator,
-                    speed = viewModel.playbackSpeed,
-                )
-            },
-        )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.Top,
+        ) {
+            if (videoPlayerState.controlsVisible) {
+                val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+                Text(time)
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            VideoPlayerOverlay(
+                focusRequester = focusRequester,
+                state = videoPlayerState,
+                isPlaying = isPlaying,
+                controls = {
+                    VideoPlayerControls(
+                        title = uiState.currentItemTitle,
+                        isPlaying = isPlaying,
+                        contentCurrentPosition = currentPosition,
+                        player = viewModel.player,
+                        state = videoPlayerState,
+                        focusRequester = focusRequester,
+                        navigator = navigator,
+                        speed = viewModel.playbackSpeed,
+                    )
+                },
+            )
+        }
     }
 }
 
@@ -255,7 +279,6 @@ fun VideoPlayerControls(
             second.requestFocus()
         }
     }
-
     VideoPlayerControlsLayout(
         mediaTitle = {
             VideoPlayerMediaTitle(
